@@ -23,7 +23,7 @@ export default function ProjectsPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [showWakeHint, setShowWakeHint] = useState(false);
-  const hintTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: projects, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['projects'],
@@ -36,7 +36,7 @@ export default function ProjectsPage() {
     } else {
       setShowWakeHint(false);
     }
-    return () => { clearTimeout(hintTimerRef.current); };
+    return () => { if (hintTimerRef.current) clearTimeout(hintTimerRef.current); };
   }, [isLoading, isFetching]);
 
   const createMut = useMutation({
