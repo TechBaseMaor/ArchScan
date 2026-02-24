@@ -113,6 +113,64 @@ Provenance is tracked in `golden-dataset/provenance.json` (auto-generated).
 | POST | `/benchmarks/dataset/sync` | Sync golden dataset |
 | GET | `/benchmarks/dataset/status` | Check dataset completeness |
 
+## Deployment
+
+The system runs on **Render** (backend) + **Netlify** (frontend) + **Neon** (Postgres).
+
+| Service | URL | Auto-deploy |
+|---------|-----|-------------|
+| Backend API | `https://archscan.onrender.com` | On push to `main` |
+| Frontend | `https://archscan-planandgo.netlify.app` | On push to `main` |
+| Database | Neon Postgres (pooled) | N/A |
+
+### Deploy flow
+
+```
+git push origin main
+  ├── Render: builds & deploys backend (auto-deploy from main)
+  ├── Netlify: builds & deploys frontend (auto-deploy from main)
+  └── GitHub Actions: runs benchmark gate + smoke tests
+```
+
+### Environment variables
+
+**Render** (backend only):
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Neon pooled connection string |
+| `ALLOWED_ORIGINS` | Comma-separated frontend domain(s) |
+
+**Netlify** (frontend only):
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_BASE_URL` | Backend URL (e.g. `https://archscan.onrender.com`) |
+
+### Post-deploy verification
+
+```bash
+# Quick health check
+curl https://archscan.onrender.com/health
+# Expected: {"status":"ok","storage":"postgres"}
+
+# Full smoke test
+./scripts/smoke_prod.sh
+
+# Custom API base
+./scripts/smoke_prod.sh https://your-service.onrender.com
+```
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| `"storage":"file"` | `DATABASE_URL` not set in Render | Add env var in Render → Environment |
+| CORS errors in browser | `ALLOWED_ORIGINS` missing or wrong | Set to Netlify domain in Render → Environment |
+| Frontend shows blank / localhost errors | `VITE_API_BASE_URL` not set in Netlify | Add env var in Netlify → Environment variables, re-deploy |
+| `channel_binding` error | Neon URL incompatibility | Already handled in code (`config.py`) |
+| Deploy not triggered | Auto-deploy off | Check Render Settings → Build & Deploy → Auto-Deploy = Yes |
+
 ## Project Structure
 
 ```
@@ -121,7 +179,9 @@ src/app/
   config.py            # Tolerance, KPI thresholds, paths
   api/                 # HTTP endpoint handlers
   domain/models.py     # Pydantic domain contracts
-  storage/file_repo.py # JSON file-based persistence (no DB)
+  storage/repo.py      # Unified repository (auto-selects file vs Postgres)
+  storage/pg_repo.py   # Postgres/Neon persistence (JSONB)
+  storage/file_repo.py # JSON file-based persistence (local fallback)
   ingestion/           # IFC + PDF parsing adapters
   engine/              # Geometry engine + rule engine
   validation/          # Async validation worker
@@ -139,7 +199,7 @@ tests/                 # Unit + integration + golden regression tests
 
 ## Key Design Decisions
 
-- **No database** — all state stored as JSON files under `data/`
+- **Dual storage** — Postgres (Neon) in production via `DATABASE_URL`, JSON files locally as fallback
 - **Append-only revisions** — no overwrite allowed
 - **Deterministic rule engine** — AI is only used for text extraction, never for compliance decisions
 - **Full traceability** — every finding links to rule version, input facts, computation trace, and source files

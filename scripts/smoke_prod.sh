@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Production smoke test — run manually to verify deployment health.
+# Usage: ./scripts/smoke_prod.sh [API_BASE]
+#   Default API_BASE: https://archscan.onrender.com
+
+set -euo pipefail
+
+API="${1:-https://archscan.onrender.com}"
+PASS=0
+FAIL=0
+
+check() {
+  local label="$1" ; shift
+  if "$@" >/dev/null 2>&1; then
+    echo "  [PASS] $label"
+    PASS=$((PASS + 1))
+  else
+    echo "  [FAIL] $label"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+echo "=== ArchScan Production Smoke Test ==="
+echo "API: $API"
+echo ""
+
+# 1. Health endpoint reachable
+HEALTH=$(curl -sf --max-time 15 "$API/health" 2>/dev/null || echo '{}')
+echo "Health response: $HEALTH"
+check "Health returns 200" curl -sf --max-time 15 "$API/health"
+
+# 2. Storage is postgres
+STORAGE=$(echo "$HEALTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('storage',''))" 2>/dev/null || echo "")
+check "Storage is postgres" test "$STORAGE" = "postgres"
+
+# 3. Projects endpoint
+check "GET /projects returns 200" curl -sf --max-time 10 "$API/projects"
+
+# 4. Rulesets endpoint
+check "GET /rulesets returns 200" curl -sf --max-time 10 "$API/rulesets"
+
+# 5. OpenAPI docs accessible
+check "GET /docs returns 200" curl -sf --max-time 10 -o /dev/null "$API/docs"
+
+# 6. Projects returns JSON array
+check "GET /projects is JSON array" python3 -c "
+import json, urllib.request
+d = json.load(urllib.request.urlopen('$API/projects'))
+assert isinstance(d, list)
+"
+
+echo ""
+echo "=== Results: $PASS passed, $FAIL failed ==="
+
+if [ "$FAIL" -gt 0 ]; then
+  echo ""
+  echo "Troubleshooting hints:"
+  [ "$STORAGE" != "postgres" ] && echo "  - DATABASE_URL may be missing in Render Environment"
+  echo "  - Check Render logs: https://dashboard.render.com"
+  echo "  - Check Neon dashboard for connection issues"
+  exit 1
+fi
+
+echo "All checks passed."
