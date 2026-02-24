@@ -1,24 +1,4 @@
 :root {
-  --color-bg: #0f1117;
-  --color-surface: #1a1d27;
-  --color-surface-2: #232733;
-  --color-border: #2e3348;
-  --color-text: #e4e6f0;
-  --color-text-dim: #8b90a5;
-  --color-primary: #6c8aff;
-  --color-primary-hover: #8aa3ff;
-  --color-success: #4ade80;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
-  --color-info: #60a5fa;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow: 0 1px 3px rgba(0,0,0,.3);
-  --font-mono: 'SF Mono', 'Fira Code', monospace;
-  --sidebar-width: 220px;
-}
-
-[data-theme="light"] {
   --color-bg: #f5f6f8;
   --color-surface: #ffffff;
   --color-surface-2: #f0f1f4;
@@ -31,7 +11,27 @@
   --color-warning: #d97706;
   --color-error: #dc2626;
   --color-info: #2563eb;
+  --radius: 8px;
+  --radius-lg: 12px;
   --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --sidebar-width: 220px;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-2: #232733;
+  --color-border: #2e3348;
+  --color-text: #e4e6f0;
+  --color-text-dim: #8b90a5;
+  --color-primary: #6c8aff;
+  --color-primary-hover: #8aa3ff;
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+  --shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -316,4 +316,9 @@ tbody tr:hover { background: rgba(108,138,255,.04); }
 .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

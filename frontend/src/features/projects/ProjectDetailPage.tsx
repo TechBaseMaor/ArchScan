@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Upload, FileText, Clock } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Clock, Eye } from 'lucide-react';
 import { getProject, listRevisions, getProjectHistory } from '../../shared/api/projects';
 import { useI18n } from '../../shared/i18n';
 import Spinner from '../../shared/components/Spinner';
@@ -67,7 +67,7 @@ export default function ProjectDetailPage() {
             <div className="table-responsive">
               <table>
                 <thead>
-                  <tr><th>{t('projectDetail.revision')}</th><th>{t('projectDetail.files')}</th><th>{t('common.date')}</th></tr>
+                  <tr><th>{t('projectDetail.revision')}</th><th>{t('projectDetail.files')}</th><th>{t('common.date')}</th><th></th></tr>
                 </thead>
                 <tbody>
                   {revisions.map((r) => (
@@ -81,6 +81,15 @@ export default function ProjectDetailPage() {
                         ))}
                       </td>
                       <td style={{ fontSize: 12, color: 'var(--color-text-dim)' }}>{formatDateTime(r.created_at)}</td>
+                      <td>
+                        <Link
+                          to={`/projects/${projectId}/revisions/${r.revision_id}/insights`}
+                          className="btn-primary"
+                          style={{ fontSize: 12, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <Eye size={13} /> {t('insights.viewInsights')}
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

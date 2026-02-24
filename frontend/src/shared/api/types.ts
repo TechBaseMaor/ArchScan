@@ -106,6 +106,71 @@ export interface RuleSet {
   created_at: string;
 }
 
+// ── Extracted Facts & Revision Summary ────────────────────────────────────
+
+export interface ExtractedFact {
+  fact_id: string;
+  revision_id: string;
+  source_hash: string;
+  fact_type: 'geometric' | 'textual';
+  category: string;
+  label: string;
+  value: unknown;
+  unit: string;
+  geometry_wkt: string;
+  confidence: number;
+  extraction_method: string;
+  raw_source_ref: string;
+  metadata: Record<string, unknown>;
+}
+
+export type AgreementStatus = 'matched' | 'minor_deviation' | 'major_deviation' | 'single_source';
+
+export interface SummaryMetric {
+  label: string;
+  value: unknown;
+  unit: string;
+  confidence: number;
+  source: string;
+  raw_source_ref: string;
+  fact_ids: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface ReconciliationEntry {
+  category: string;
+  label: string;
+  ifc_value: unknown | null;
+  pdf_value: unknown | null;
+  chosen_value: unknown;
+  unit: string;
+  agreement: AgreementStatus;
+  deviation_pct: number | null;
+}
+
+export interface RevisionSummary {
+  project_id: string;
+  revision_id: string;
+  areas: SummaryMetric[];
+  heights: SummaryMetric[];
+  floors: SummaryMetric[];
+  openings: SummaryMetric[];
+  setbacks: SummaryMetric[];
+  reconciliation: ReconciliationEntry[];
+  total_facts: number;
+  sources_used: string[];
+}
+
+// ── Demo / Sample Files ───────────────────────────────────────────────────
+
+export interface SampleFileInfo {
+  name: string;
+  description: string;
+  format: string;
+  size_hint: string;
+  download_url: string;
+}
+
 export type GateStatus = 'pass' | 'fail' | 'skip';
 
 export interface MetricResult {

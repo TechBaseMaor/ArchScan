@@ -123,7 +123,36 @@ async def test_full_flow():
             assert "project_id" in finding
             assert "revision_id" in finding
 
-        # 9. Check project history
+        # 9. Check revision facts endpoint
+        r = await client.get(f"/projects/{project_id}/revisions/{revision_id}/facts")
+        assert r.status_code == 200
+        facts = r.json()
+        assert isinstance(facts, list)
+        assert len(facts) > 0
+        for fact in facts:
+            assert "fact_id" in fact
+            assert "category" in fact
+            assert "value" in fact
+            assert "confidence" in fact
+            assert "metadata" in fact
+
+        # 10. Check revision summary endpoint
+        r = await client.get(f"/projects/{project_id}/revisions/{revision_id}/summary")
+        assert r.status_code == 200
+        summary = r.json()
+        assert summary["project_id"] == project_id
+        assert summary["revision_id"] == revision_id
+        assert summary["total_facts"] > 0
+        assert isinstance(summary["areas"], list)
+        assert isinstance(summary["heights"], list)
+        assert isinstance(summary["reconciliation"], list)
+        for area_metric in summary["areas"]:
+            assert "label" in area_metric
+            assert "value" in area_metric
+            assert "confidence" in area_metric
+            assert "source" in area_metric
+
+        # 11. Check project history
         r = await client.get(f"/projects/{project_id}/history")
         assert r.status_code == 200
         history = r.json()
@@ -143,6 +172,46 @@ async def test_list_rulesets():
         r = await client.get("/rulesets")
         assert r.status_code == 200
         assert len(r.json()) >= 1
+
+
+@pytest.mark.asyncio
+async def test_demo_bootstrap():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post("/demo/bootstrap")
+        assert r.status_code == 200
+        project = r.json()
+        assert "project_id" in project
+        assert project["name"]
+
+        project_id = project["project_id"]
+        r = await client.get(f"/projects/{project_id}/revisions")
+        assert r.status_code == 200
+        revisions = r.json()
+        assert len(revisions) == 1
+
+        revision_id = revisions[0]["revision_id"]
+        r = await client.get(f"/projects/{project_id}/revisions/{revision_id}/summary")
+        assert r.status_code == 200
+        summary = r.json()
+        assert summary["total_facts"] > 0
+        assert len(summary["areas"]) > 0
+        assert len(summary["heights"]) > 0
+        assert len(summary["openings"]) > 0
+        assert len(summary["setbacks"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_demo_samples_list():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.get("/demo/samples")
+        assert r.status_code == 200
+        samples = r.json()
+        assert isinstance(samples, list)
+        assert len(samples) >= 1
+        assert "name" in samples[0]
+        assert "download_url" in samples[0]
 
 
 @pytest.mark.asyncio

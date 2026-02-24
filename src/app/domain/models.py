@@ -95,7 +95,7 @@ class ExtractedFact(BaseModel):
     revision_id: str
     source_hash: str
     fact_type: FactType
-    category: str          # e.g. "area", "height", "setback", "text_clause"
+    category: str          # e.g. "area", "height", "setback", "opening_window", "opening_door", "floor_summary"
     label: str             # human-readable description
     value: Any             # numeric or string
     unit: str = ""
@@ -103,6 +103,51 @@ class ExtractedFact(BaseModel):
     confidence: float = 1.0
     extraction_method: str = "deterministic"
     raw_source_ref: str = ""
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+# ── Revision summary (client-facing) ──────────────────────────────────────
+
+class AgreementStatus(str, Enum):
+    MATCHED = "matched"
+    MINOR_DEVIATION = "minor_deviation"
+    MAJOR_DEVIATION = "major_deviation"
+    SINGLE_SOURCE = "single_source"
+
+
+class SummaryMetric(BaseModel):
+    label: str
+    value: Any
+    unit: str = ""
+    confidence: float = 1.0
+    source: str = ""           # "ifc" | "pdf" | "reconciled"
+    raw_source_ref: str = ""
+    fact_ids: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReconciliationEntry(BaseModel):
+    category: str
+    label: str
+    ifc_value: Optional[Any] = None
+    pdf_value: Optional[Any] = None
+    chosen_value: Any = None
+    unit: str = ""
+    agreement: AgreementStatus = AgreementStatus.SINGLE_SOURCE
+    deviation_pct: Optional[float] = None
+
+
+class RevisionSummary(BaseModel):
+    project_id: str
+    revision_id: str
+    areas: list[SummaryMetric] = Field(default_factory=list)
+    heights: list[SummaryMetric] = Field(default_factory=list)
+    floors: list[SummaryMetric] = Field(default_factory=list)
+    openings: list[SummaryMetric] = Field(default_factory=list)
+    setbacks: list[SummaryMetric] = Field(default_factory=list)
+    reconciliation: list[ReconciliationEntry] = Field(default_factory=list)
+    total_facts: int = 0
+    sources_used: list[str] = Field(default_factory=list)
 
 
 # ── Rules ──────────────────────────────────────────────────────────────────

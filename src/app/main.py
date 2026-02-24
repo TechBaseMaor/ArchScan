@@ -8,6 +8,7 @@ from src.app.api.projects import router as projects_router
 from src.app.api.validations import router as validations_router
 from src.app.api.rulesets import router as rulesets_router
 from src.app.api.benchmarks import router as benchmarks_router
+from src.app.api.demo import router as demo_router
 from src.app.config import settings
 from src.app.storage.repo import bootstrap_schema
 from src.app.validation.worker import validation_manager
@@ -58,6 +59,7 @@ app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(validations_router, prefix="/validations", tags=["validations"])
 app.include_router(rulesets_router, prefix="/rulesets", tags=["rulesets"])
 app.include_router(benchmarks_router, prefix="/benchmarks", tags=["benchmarks"])
+app.include_router(demo_router, prefix="/demo", tags=["demo"])
 
 
 @app.get("/health")

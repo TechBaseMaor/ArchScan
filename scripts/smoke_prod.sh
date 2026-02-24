@@ -21,8 +21,21 @@ check() {
   fi
 }
 
+measure() {
+  local label="$1" url="$2"
+  local result
+  result=$(curl -sS -o /dev/null -w "status=%{http_code} dns=%{time_namelookup}s connect=%{time_connect}s ttfb=%{time_starttransfer}s total=%{time_total}s" --max-time 30 "$url" 2>/dev/null || echo "FAILED")
+  echo "  [LATENCY] $label: $result"
+}
+
 echo "=== ArchScan Production Smoke Test ==="
 echo "API: $API"
+echo ""
+
+# 0. Latency measurements
+echo "--- Latency ---"
+measure "GET /health" "$API/health"
+measure "GET /projects" "$API/projects"
 echo ""
 
 # 1. Health endpoint reachable

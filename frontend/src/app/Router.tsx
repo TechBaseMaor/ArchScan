@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './Layout';
 import ProjectsPage from '../features/projects/ProjectsPage';
 import ProjectDetailPage from '../features/projects/ProjectDetailPage';
+import RevisionInsightsPage from '../features/projects/RevisionInsightsPage';
 import ValidationWizard from '../features/validations/ValidationWizard';
 import FindingsPage from '../features/validations/FindingsPage';
 import RulesetsPage from '../features/rulesets/RulesetsPage';
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <ProjectsPage /> },
       { path: '/projects/:projectId', element: <ProjectDetailPage /> },
+      { path: '/projects/:projectId/revisions/:revisionId/insights', element: <RevisionInsightsPage /> },
       { path: '/projects/:projectId/validate', element: <ValidationWizard /> },
       { path: '/validations/:validationId/findings', element: <FindingsPage /> },
       { path: '/rulesets', element: <RulesetsPage /> },

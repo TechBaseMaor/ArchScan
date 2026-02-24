@@ -5,9 +5,11 @@ from typing import Any
 
 from src.app.domain.models import (
     CreateProjectRequest,
+    ExtractedFact,
     Project,
     ProjectHistoryEntry,
     Revision,
+    RevisionSummary,
     SourceFile,
     SourceFormat,
 )
@@ -96,6 +98,33 @@ async def create_revision(
 @router.get("/{project_id}/revisions", response_model=list[Revision])
 async def list_revisions(project_id: str):
     return repo.list_revisions(project_id)
+
+
+@router.get("/{project_id}/revisions/{revision_id}/facts", response_model=list[ExtractedFact])
+async def get_revision_facts(project_id: str, revision_id: str, request: Request):
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
+    if not proj:
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
+    rev = repo.get_revision(project_id, revision_id)
+    if not rev:
+        raise HTTPException(status_code=404, detail="Revision not found")
+    return repo.load_facts(project_id, revision_id)
+
+
+@router.get("/{project_id}/revisions/{revision_id}/summary", response_model=RevisionSummary)
+async def get_revision_summary(project_id: str, revision_id: str, request: Request):
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
+    if not proj:
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
+    rev = repo.get_revision(project_id, revision_id)
+    if not rev:
+        raise HTTPException(status_code=404, detail="Revision not found")
+
+    from src.app.reporting.insights_service import build_revision_summary
+    facts = repo.load_facts(project_id, revision_id)
+    return build_revision_summary(project_id, revision_id, facts)
 
 
 @router.get("/{project_id}/history", response_model=list[ProjectHistoryEntry])

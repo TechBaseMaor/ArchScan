@@ -16,7 +16,8 @@ function useTheme() {
       document.documentElement.setAttribute('data-theme', saved);
       return saved;
     }
-    return 'dark';
+    document.documentElement.setAttribute('data-theme', 'light');
+    return 'light';
   });
 
   const toggle = () => {

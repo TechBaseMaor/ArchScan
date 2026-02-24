@@ -23,8 +23,11 @@ def extract_facts_from_ifc(file_path: str, revision_id: str, source_hash: str) -
     # ── Spaces (areas, heights) ────────────────────────────────────────
     for space in model.by_type("IfcSpace"):
         name = getattr(space, "LongName", None) or getattr(space, "Name", None) or space.GlobalId
+        storey_name = _containing_storey_name(space)
 
-        area = _get_quantity(space, "NetFloorArea") or _get_quantity(space, "GrossFloorArea")
+        net_area = _get_quantity(space, "NetFloorArea")
+        gross_area = _get_quantity(space, "GrossFloorArea")
+        area = net_area or gross_area
         if area is not None:
             facts.append(
                 ExtractedFact(
@@ -36,6 +39,11 @@ def extract_facts_from_ifc(file_path: str, revision_id: str, source_hash: str) -
                     value=round(area, 4),
                     unit="m2",
                     raw_source_ref=f"IfcSpace#{space.id()}",
+                    metadata={
+                        "subtype": "net" if net_area is not None else "gross",
+                        "space_name": name,
+                        "storey": storey_name,
+                    },
                 )
             )
 
@@ -51,11 +59,13 @@ def extract_facts_from_ifc(file_path: str, revision_id: str, source_hash: str) -
                     value=round(height, 4),
                     unit="m",
                     raw_source_ref=f"IfcSpace#{space.id()}",
+                    metadata={"space_name": name, "storey": storey_name},
                 )
             )
 
-    # ── Building storeys (levels) ──────────────────────────────────────
+    # ── Building storeys (levels + floor summaries) ────────────────────
     for storey in model.by_type("IfcBuildingStorey"):
+        s_name = storey.Name or storey.GlobalId
         elev = getattr(storey, "Elevation", None)
         if elev is not None:
             facts.append(
@@ -64,12 +74,37 @@ def extract_facts_from_ifc(file_path: str, revision_id: str, source_hash: str) -
                     source_hash=source_hash,
                     fact_type=FactType.GEOMETRIC,
                     category="level",
-                    label=f"Elevation of {storey.Name or storey.GlobalId}",
+                    label=f"Elevation of {s_name}",
                     value=round(float(elev), 4),
                     unit="m",
                     raw_source_ref=f"IfcBuildingStorey#{storey.id()}",
+                    metadata={"storey_name": s_name},
                 )
             )
+
+        space_count, total_area = _storey_space_summary(storey)
+        if space_count > 0:
+            facts.append(
+                ExtractedFact(
+                    revision_id=revision_id,
+                    source_hash=source_hash,
+                    fact_type=FactType.GEOMETRIC,
+                    category="floor_summary",
+                    label=f"Floor summary: {s_name}",
+                    value=space_count,
+                    unit="spaces",
+                    raw_source_ref=f"IfcBuildingStorey#{storey.id()}",
+                    metadata={
+                        "storey_name": s_name,
+                        "space_count": space_count,
+                        "total_area_m2": round(total_area, 4) if total_area else None,
+                        "elevation_m": round(float(elev), 4) if elev is not None else None,
+                    },
+                )
+            )
+
+    # ── Openings (windows and doors) ───────────────────────────────────
+    _extract_opening_facts(model, revision_id, source_hash, facts)
 
     # ── Site setback (simplified: bounding box of IfcSite vs IfcBuilding) ──
     _extract_setback_facts(model, revision_id, source_hash, facts)
@@ -94,6 +129,98 @@ def _get_quantity(element, qty_name: str) -> float | None:
     except Exception:
         pass
     return None
+
+
+def _containing_storey_name(element) -> str:
+    """Walk the spatial hierarchy upward to find the containing IfcBuildingStorey name."""
+    try:
+        for rel in getattr(element, "Decomposes", []):
+            parent = rel.RelatingObject
+            if parent.is_a("IfcBuildingStorey"):
+                return parent.Name or parent.GlobalId
+        for rel in getattr(element, "ContainedInStructure", []):
+            parent = rel.RelatingStructure
+            if parent.is_a("IfcBuildingStorey"):
+                return parent.Name or parent.GlobalId
+    except Exception:
+        pass
+    return ""
+
+
+def _storey_space_summary(storey) -> tuple[int, float]:
+    """Return (space_count, total_area) for spaces belonging to a storey."""
+    space_count = 0
+    total_area = 0.0
+    try:
+        for rel in getattr(storey, "ContainsElements", []):
+            for elem in rel.RelatedElements:
+                if elem.is_a("IfcSpace"):
+                    space_count += 1
+                    a = _get_quantity(elem, "NetFloorArea") or _get_quantity(elem, "GrossFloorArea")
+                    if a is not None:
+                        total_area += a
+        for rel in getattr(storey, "IsDecomposedBy", []):
+            for child in rel.RelatedObjects:
+                if child.is_a("IfcSpace"):
+                    space_count += 1
+                    a = _get_quantity(child, "NetFloorArea") or _get_quantity(child, "GrossFloorArea")
+                    if a is not None:
+                        total_area += a
+    except Exception:
+        pass
+    return space_count, total_area
+
+
+def _extract_opening_facts(model, revision_id: str, source_hash: str, facts: list[ExtractedFact]) -> None:
+    """Extract window and door facts with dimensions from property sets."""
+    for ifc_type, category in [("IfcWindow", "opening_window"), ("IfcDoor", "opening_door")]:
+        try:
+            elements = model.by_type(ifc_type)
+        except Exception:
+            continue
+        for elem in elements:
+            name = getattr(elem, "Name", None) or elem.GlobalId
+            storey_name = _containing_storey_name(elem)
+
+            width = (
+                getattr(elem, "OverallWidth", None)
+                or _get_quantity(elem, "Width")
+            )
+            height = (
+                getattr(elem, "OverallHeight", None)
+                or _get_quantity(elem, "Height")
+            )
+
+            meta: dict = {"storey": storey_name, "element_name": name}
+            if width is not None:
+                meta["width_m"] = round(float(width), 4)
+            if height is not None:
+                meta["height_m"] = round(float(height), 4)
+
+            dim_label = ""
+            if width is not None and height is not None:
+                dim_label = f" ({round(float(width), 2)}x{round(float(height), 2)}m)"
+            type_label = "Window" if category == "opening_window" else "Door"
+
+            facts.append(
+                ExtractedFact(
+                    revision_id=revision_id,
+                    source_hash=source_hash,
+                    fact_type=FactType.GEOMETRIC,
+                    category=category,
+                    label=f"{type_label}: {name}{dim_label}",
+                    value=1,
+                    unit="count",
+                    raw_source_ref=f"{ifc_type}#{elem.id()}",
+                    metadata=meta,
+                )
+            )
+
+    logger.debug(
+        "Openings extracted: %d windows, %d doors",
+        sum(1 for f in facts if f.category == "opening_window"),
+        sum(1 for f in facts if f.category == "opening_door"),
+    )
 
 
 def _extract_setback_facts(model, revision_id: str, source_hash: str, facts: list[ExtractedFact]) -> None:

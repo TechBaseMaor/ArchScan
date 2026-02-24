@@ -1,5 +1,5 @@
 import api from './client';
-import type { Project, Revision, ProjectHistoryEntry } from './types';
+import type { Project, Revision, ProjectHistoryEntry, ExtractedFact, RevisionSummary, SampleFileInfo } from './types';
 
 export async function listProjects(): Promise<Project[]> {
   const { data } = await api.get<Project[]>('/projects');
@@ -32,5 +32,25 @@ export async function createRevision(projectId: string, files: File[]): Promise<
 
 export async function getProjectHistory(projectId: string): Promise<ProjectHistoryEntry[]> {
   const { data } = await api.get<ProjectHistoryEntry[]>(`/projects/${projectId}/history`);
+  return data;
+}
+
+export async function getRevisionFacts(projectId: string, revisionId: string): Promise<ExtractedFact[]> {
+  const { data } = await api.get<ExtractedFact[]>(`/projects/${projectId}/revisions/${revisionId}/facts`);
+  return data;
+}
+
+export async function getRevisionSummary(projectId: string, revisionId: string): Promise<RevisionSummary> {
+  const { data } = await api.get<RevisionSummary>(`/projects/${projectId}/revisions/${revisionId}/summary`);
+  return data;
+}
+
+export async function bootstrapDemo(): Promise<Project> {
+  const { data } = await api.post<Project>('/demo/bootstrap');
+  return data;
+}
+
+export async function listSampleFiles(): Promise<SampleFileInfo[]> {
+  const { data } = await api.get<SampleFileInfo[]>('/demo/samples');
   return data;
 }

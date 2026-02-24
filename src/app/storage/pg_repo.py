@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import json
 import logging
+from contextlib import contextmanager
 from datetime import date, datetime
 from typing import Optional
 
 import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
+from psycopg_pool import ConnectionPool
 
 from src.app.config import settings
 from src.app.domain.models import (
@@ -31,14 +33,33 @@ from src.app.storage.file_repo import (  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
+_pool: ConnectionPool | None = None
+
+
+def _get_pool() -> ConnectionPool:
+    global _pool
+    if _pool is None:
+        _pool = ConnectionPool(
+            conninfo=settings.database_url,
+            min_size=1,
+            max_size=10,
+            kwargs={"row_factory": dict_row},
+            open=True,
+        )
+        logger.info("Postgres connection pool created (min=1, max=10)")
+    return _pool
+
 
 def _dump(model) -> Jsonb:
     """Serialize a Pydantic model to a psycopg Jsonb wrapper."""
     return Jsonb(model.model_dump(mode="json"))
 
 
+@contextmanager
 def _conn():
-    return psycopg.connect(settings.database_url, row_factory=dict_row)
+    """Yield a connection from the pool (returned automatically on exit)."""
+    with _get_pool().connection() as conn:
+        yield conn
 
 
 # ── Schema bootstrap ──────────────────────────────────────────────────────
@@ -85,6 +106,11 @@ CREATE TABLE IF NOT EXISTS audit_events (
     created_date DATE NOT NULL DEFAULT CURRENT_DATE,
     data JSONB NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_revisions_project_id ON revisions (project_id);
+CREATE INDEX IF NOT EXISTS idx_validations_project_id ON validations (project_id);
+CREATE INDEX IF NOT EXISTS idx_facts_project_revision ON facts (project_id, revision_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_date ON audit_events (created_date);
 """
 
 
