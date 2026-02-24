@@ -57,7 +57,7 @@ ACAO=$(curl -s -D - -o /dev/null -X OPTIONS \
   -H "Access-Control-Request-Method: GET" \
   "$API/health" 2>/dev/null | grep -i "access-control-allow-origin" | tr -d '\r')
 echo "  CORS header: $ACAO"
-check "CORS preflight includes frontend origin" echo "$ACAO" | grep -qi "$FRONTEND"
+check "CORS preflight includes frontend origin" bash -c 'echo "$1" | grep -qi -- "$2"' _ "$ACAO" "$FRONTEND"
 
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="

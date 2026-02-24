@@ -1,4 +1,4 @@
-import api from './client';
+import api, { resolveBaseURL } from './client';
 import type { ValidationRun, Finding } from './types';
 
 export async function startValidation(
@@ -25,9 +25,6 @@ export async function getFindings(validationId: string): Promise<Finding[]> {
 }
 
 export function getReportUrl(validationId: string): string {
-  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-  if (import.meta.env.PROD && (base.includes('localhost') || base.includes('127.0.0.1'))) {
-    console.error('VITE_API_BASE_URL is localhost in production — reports will fail.');
-  }
+  const base = resolveBaseURL();
   return `${base}/validations/${validationId}/report`;
 }
