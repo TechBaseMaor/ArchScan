@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-function resolveBaseURL(): string {
+export function resolveBaseURL(): string {
   const url = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
   if (import.meta.env.PROD && (url.includes('localhost') || url.includes('127.0.0.1'))) {
     throw new Error(
