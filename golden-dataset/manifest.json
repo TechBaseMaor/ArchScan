@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "description": "ArchScan Golden Dataset v1.1 - first-wave 12 entries for KPI evaluation",
+  "version": "1.2.0",
+  "description": "ArchScan Golden Dataset v1.2 - 20 entries (wave 1+2) for KPI evaluation",
   "ruleset_id": "israel_residential_v1",
   "ruleset_version": "1.0.0",
   "entries": [
@@ -123,6 +123,130 @@
       "tags": ["hebrew", "raanana", "regulatory", "setback", "height"],
       "baseline_status": "exploratory",
       "notes": "Raanana plan instructions - setback/height/area rules source"
+    },
+    {
+      "entry_id": "medium-samplehouse-ifc4",
+      "name": "IFC4 Sample House (full building)",
+      "category": "medium",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_SampleHouse.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["house", "full-building", "multi-element", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "IfcSampleFiles", "type": "full-house"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "simple-window-ifc4",
+      "name": "IFC4 Sample House Window",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_SampleHouse_IfcWindow.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["window", "opening", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"element_type": "window"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "simple-bimwhale-wall",
+      "name": "BIM Whale Simple Wall",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/SimpleWall/IFC/SimpleWall.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["wall", "simple", "revit"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale", "type": "simple-wall"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "medium-bimwhale-advanced",
+      "name": "BIM Whale Advanced Project",
+      "category": "medium",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/AdvancedProject/IFC/AdvancedProject.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["advanced", "multi-element", "revit"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale", "type": "advanced"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "complex-bimwhale-tall",
+      "name": "BIM Whale Tall Building",
+      "category": "complex",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/TallBuilding/IFC/TallBuilding.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["tall", "multi-storey", "complex", "revit"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale", "type": "tall-building"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "medium-bimwhale-manywalls",
+      "name": "BIM Whale Many Simple Walls",
+      "category": "medium",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/ManySimpleWalls/IFC/ManySimpleWalls.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["walls", "repetitive", "stress-test"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale", "type": "many-walls"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "complex-bimwhale-large",
+      "name": "BIM Whale Large Building",
+      "category": "complex",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/LargeBuilding/IFC/LargeBuilding.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["large", "complex", "performance-test"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale", "type": "large-building"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "regulatory-pdf-haifa",
+      "name": "Haifa Spatial Guidelines (General Chapter)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "https://www.haifa.muni.il/wp-content/uploads/2021/10/%D7%A4%D7%A8%D7%A7-%D7%9B%D7%9C%D7%9C%D7%99-%D7%9C%D7%A4%D7%A8%D7%A1%D7%95%D7%9D.pdf",
+      "download_policy": "auto",
+      "license_note": "Haifa Municipality - public spatial guidelines",
+      "tags": ["hebrew", "haifa", "regulatory", "area-calc", "height"],
+      "baseline_status": "exploratory",
+      "notes": "Haifa spatial guidelines - area calculation and height rules"
     },
     {
       "entry_id": "simple-synthetic-area-violation",

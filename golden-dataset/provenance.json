@@ -106,5 +106,77 @@
     "downloaded_at": "2026-02-24T02:30:52.125360",
     "error_message": null,
     "file_size_bytes": 1030
+  },
+  "medium-samplehouse-ifc4": {
+    "entry_id": "medium-samplehouse-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/medium/medium-samplehouse-ifc4.ifc",
+    "actual_checksum": "7606dc4e96b538d6",
+    "downloaded_at": "2026-02-24T02:47:25.286226",
+    "error_message": null,
+    "file_size_bytes": 2273870
+  },
+  "simple-window-ifc4": {
+    "entry_id": "simple-window-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-window-ifc4.ifc",
+    "actual_checksum": "16b61494127df51c",
+    "downloaded_at": "2026-02-24T02:47:25.576548",
+    "error_message": null,
+    "file_size_bytes": 38350
+  },
+  "simple-bimwhale-wall": {
+    "entry_id": "simple-bimwhale-wall",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-bimwhale-wall.ifc",
+    "actual_checksum": "a653f7accd6d7e6f",
+    "downloaded_at": "2026-02-24T02:47:25.999299",
+    "error_message": null,
+    "file_size_bytes": 39818
+  },
+  "medium-bimwhale-advanced": {
+    "entry_id": "medium-bimwhale-advanced",
+    "status": "downloaded",
+    "local_path": "golden-dataset/medium/medium-bimwhale-advanced.ifc",
+    "actual_checksum": "86b068a7ca6947e3",
+    "downloaded_at": "2026-02-24T02:47:28.715933",
+    "error_message": null,
+    "file_size_bytes": 44337371
+  },
+  "complex-bimwhale-tall": {
+    "entry_id": "complex-bimwhale-tall",
+    "status": "downloaded",
+    "local_path": "golden-dataset/complex/complex-bimwhale-tall.ifc",
+    "actual_checksum": "9f180a7148bb7bcf",
+    "downloaded_at": "2026-02-24T02:47:29.327424",
+    "error_message": null,
+    "file_size_bytes": 616509
+  },
+  "medium-bimwhale-manywalls": {
+    "entry_id": "medium-bimwhale-manywalls",
+    "status": "downloaded",
+    "local_path": "golden-dataset/medium/medium-bimwhale-manywalls.ifc",
+    "actual_checksum": "a5af5b76127e85cd",
+    "downloaded_at": "2026-02-24T02:47:29.996478",
+    "error_message": null,
+    "file_size_bytes": 584056
+  },
+  "complex-bimwhale-large": {
+    "entry_id": "complex-bimwhale-large",
+    "status": "downloaded",
+    "local_path": "golden-dataset/complex/complex-bimwhale-large.ifc",
+    "actual_checksum": "102f8123f85eae5e",
+    "downloaded_at": "2026-02-24T02:47:30.665944",
+    "error_message": null,
+    "file_size_bytes": 1292595
+  },
+  "regulatory-pdf-haifa": {
+    "entry_id": "regulatory-pdf-haifa",
+    "status": "downloaded",
+    "local_path": "golden-dataset/regulatory_text/regulatory-pdf-haifa.pdf",
+    "actual_checksum": "f797ea4f134bfb09",
+    "downloaded_at": "2026-02-24T02:47:30.801096",
+    "error_message": null,
+    "file_size_bytes": 280999
   }
 }
