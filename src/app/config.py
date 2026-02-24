@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from pydantic import BaseModel
 
@@ -43,10 +44,15 @@ class AppConfig(BaseModel):
         return bool(self.database_url)
 
 
+def _sanitize_db_url(url: str) -> str:
+    """Strip channel_binding param that Neon adds but older libpq doesn't support."""
+    return re.sub(r"[&?]channel_binding=[^&]*", "", url)
+
+
 def _build_settings() -> AppConfig:
     overrides: dict = {}
     if db_url := os.environ.get("DATABASE_URL"):
-        overrides["database_url"] = db_url
+        overrides["database_url"] = _sanitize_db_url(db_url)
     if origins_raw := os.environ.get("ALLOWED_ORIGINS"):
         extra = [o.strip() for o in origins_raw.split(",") if o.strip()]
         overrides["allowed_origins"] = _DEFAULT_ORIGINS + extra
