@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 from src.app.domain.models import ValidationStatus
-from src.app.storage import file_repo
+from src.app.storage import repo
 from src.app.engine.rule_engine import evaluate_ruleset
 from src.app.reporting.report_service import generate_pdf_report
 
@@ -55,22 +55,22 @@ class ValidationManager:
                 self._queue.task_done()
 
     async def _run_validation(self, validation_id: str):
-        run = file_repo.get_validation(validation_id)
+        run = repo.get_validation(validation_id)
         if not run:
             logger.error("Validation %s not found", validation_id)
             return
 
         run.status = ValidationStatus.RUNNING
         run.started_at = datetime.utcnow()
-        file_repo.save_validation(run)
-        file_repo.log_audit_event("start", "validation", validation_id)
+        repo.save_validation(run)
+        repo.log_audit_event("start", "validation", validation_id)
 
-        ruleset = file_repo.get_ruleset(run.ruleset_id)
+        ruleset = repo.get_ruleset(run.ruleset_id)
         if not ruleset:
             await self._mark_failed(validation_id, f"RuleSet {run.ruleset_id} not found")
             return
 
-        facts = file_repo.load_facts(run.project_id, run.revision_id)
+        facts = repo.load_facts(run.project_id, run.revision_id)
         if not facts:
             logger.warning("No facts for revision %s — validation will produce zero findings", run.revision_id)
 
@@ -82,30 +82,30 @@ class ValidationManager:
             validation_id=validation_id,
         )
 
-        file_repo.save_findings(validation_id, findings)
+        repo.save_findings(validation_id, findings)
 
         try:
             generate_pdf_report(validation_id, run, findings)
         except Exception as exc:
             logger.warning("PDF report generation failed (non-blocking): %s", exc)
 
-        run = file_repo.get_validation(validation_id)
+        run = repo.get_validation(validation_id)
         run.status = ValidationStatus.DONE
         run.completed_at = datetime.utcnow()
         run.findings_count = len(findings)
-        file_repo.save_validation(run)
-        file_repo.log_audit_event("complete", "validation", validation_id, {"findings": len(findings)})
+        repo.save_validation(run)
+        repo.log_audit_event("complete", "validation", validation_id, {"findings": len(findings)})
 
         logger.info("Validation %s completed with %d findings", validation_id, len(findings))
 
     async def _mark_failed(self, validation_id: str, error: str):
-        run = file_repo.get_validation(validation_id)
+        run = repo.get_validation(validation_id)
         if run:
             run.status = ValidationStatus.FAILED
             run.completed_at = datetime.utcnow()
             run.error_message = error
-            file_repo.save_validation(run)
-            file_repo.log_audit_event("failed", "validation", validation_id, {"error": error})
+            repo.save_validation(run)
+            repo.log_audit_event("failed", "validation", validation_id, {"error": error})
 
 
 validation_manager = ValidationManager()

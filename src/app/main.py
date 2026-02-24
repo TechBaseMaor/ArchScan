@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,7 +9,10 @@ from src.app.api.validations import router as validations_router
 from src.app.api.rulesets import router as rulesets_router
 from src.app.api.benchmarks import router as benchmarks_router
 from src.app.config import settings
+from src.app.storage.repo import bootstrap_schema
 from src.app.validation.worker import validation_manager
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -26,6 +30,10 @@ async def lifespan(app: FastAPI):
     ]:
         d.mkdir(parents=True, exist_ok=True)
 
+    if settings.use_postgres:
+        logger.info("DATABASE_URL detected — bootstrapping Postgres schema")
+        bootstrap_schema()
+
     await validation_manager.start()
     yield
     await validation_manager.stop()
@@ -40,7 +48,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,4 +62,4 @@ app.include_router(benchmarks_router, prefix="/benchmarks", tags=["benchmarks"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "storage": "postgres" if settings.use_postgres else "file"}

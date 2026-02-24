@@ -6,6 +6,7 @@ import { createRevision } from '../../shared/api/projects';
 import { listRulesets } from '../../shared/api/rulesets';
 import { startValidation, getValidation } from '../../shared/api/validations';
 import { useToast } from '../../shared/components/Toast';
+import { useI18n } from '../../shared/i18n';
 import Spinner from '../../shared/components/Spinner';
 import StatusBadge from '../../shared/components/StatusBadge';
 import type { ValidationRun } from '../../shared/api/types';
@@ -16,6 +17,7 @@ export default function ValidationWizard() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { showError } = useToast();
+  const { t } = useI18n();
 
   const [step, setStep] = useState<Step>('upload');
   const [files, setFiles] = useState<File[]>([]);
@@ -37,7 +39,7 @@ export default function ValidationWizard() {
       setRevisionId(rev.revision_id);
       setStep('ruleset');
     },
-    onError: () => showError('Failed to upload files'),
+    onError: () => showError(t('validation.uploadError')),
   });
 
   const validateMut = useMutation({
@@ -46,7 +48,7 @@ export default function ValidationWizard() {
       setValidationRun(run);
       setStep('running');
     },
-    onError: () => showError('Failed to start validation'),
+    onError: () => showError(t('validation.startError')),
   });
 
   useEffect(() => {
@@ -71,8 +73,8 @@ export default function ValidationWizard() {
       (f) => /\.(ifc|pdf|dwg)$/i.test(f.name)
     );
     if (dropped.length) setFiles((prev) => [...prev, ...dropped]);
-    else showError('Only IFC, PDF, and DWG files are supported');
-  }, [showError]);
+    else showError(t('validation.onlySupported'));
+  }, [showError, t]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
@@ -84,7 +86,7 @@ export default function ValidationWizard() {
     <>
       <div style={{ marginBottom: 24 }}>
         <Link to={`/projects/${projectId}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
-          <ArrowLeft size={14} /> Back to Project
+          <ArrowLeft size={14} /> {t('validation.backToProject')}
         </Link>
       </div>
 
@@ -99,12 +101,11 @@ export default function ValidationWizard() {
         ))}
       </div>
 
-      {/* Step 1: Upload */}
       {step === 'upload' && (
         <div className="card" style={{ maxWidth: 600, margin: '0 auto' }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>
-            <Upload size={20} style={{ marginRight: 8, verticalAlign: -4 }} />
-            Upload Files
+            <Upload size={20} style={{ marginInlineEnd: 8, verticalAlign: -4 }} />
+            {t('validation.uploadFiles')}
           </h2>
           <div
             onDrop={handleDrop}
@@ -121,7 +122,7 @@ export default function ValidationWizard() {
           >
             <FileUp size={40} color="var(--color-text-dim)" />
             <p style={{ marginTop: 12, color: 'var(--color-text-dim)', fontSize: 14 }}>
-              Drag &amp; drop IFC, PDF, or DWG files here, or click to browse
+              {t('validation.dragDrop')}
             </p>
             <input id="file-input" type="file" multiple accept=".ifc,.pdf,.dwg" style={{ display: 'none' }} onChange={handleFileInput} />
           </div>
@@ -134,7 +135,7 @@ export default function ValidationWizard() {
                   padding: '8px 12px', borderRadius: 'var(--radius)', background: 'var(--color-surface-2)', marginBottom: 6,
                 }}>
                   <span style={{ fontSize: 13 }}>{f.name} <span style={{ color: 'var(--color-text-dim)' }}>({(f.size / 1024).toFixed(0)} KB)</span></span>
-                  <button className="btn-secondary btn-sm" onClick={() => removeFile(i)}>Remove</button>
+                  <button className="btn-secondary btn-sm" onClick={() => removeFile(i)}>{t('common.remove')}</button>
                 </div>
               ))}
             </div>
@@ -143,22 +144,21 @@ export default function ValidationWizard() {
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
             <button className="btn-primary" disabled={!files.length || uploadMut.isPending}
               onClick={() => uploadMut.mutate()}>
-              {uploadMut.isPending ? <><Spinner size={14} /> Uploading...</> : 'Upload & Continue'}
+              {uploadMut.isPending ? <><Spinner size={14} /> {t('validation.uploading')}</> : t('validation.uploadContinue')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 2: Select Ruleset */}
       {step === 'ruleset' && (
         <div className="card" style={{ maxWidth: 600, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>Select Ruleset</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>{t('validation.selectRuleset')}</h2>
           {loadingRulesets ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size={24} /></div>
           ) : !rulesets?.length ? (
             <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-dim)' }}>
-              <p>No rulesets available. Create one in the Rulesets section first.</p>
-              <Link to="/rulesets" className="btn-primary" style={{ display: 'inline-block', marginTop: 12 }}>Go to Rulesets</Link>
+              <p>{t('validation.noRulesets')}</p>
+              <Link to="/rulesets" className="btn-primary" style={{ display: 'inline-block', marginTop: 12 }}>{t('validation.goToRulesets')}</Link>
             </div>
           ) : (
             <>
@@ -174,7 +174,7 @@ export default function ValidationWizard() {
                     }}>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{rs.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--color-text-dim)', marginTop: 4 }}>
-                      v{rs.version} &middot; {rs.jurisdiction} &middot; {rs.rules.length} rules
+                      v{rs.version} &middot; {rs.jurisdiction} &middot; {rs.rules.length} {t('rulesets.rules').toLowerCase()}
                     </div>
                   </div>
                 ))}
@@ -182,7 +182,7 @@ export default function ValidationWizard() {
               <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
                 <button className="btn-primary" disabled={!selectedRulesetId || validateMut.isPending}
                   onClick={() => validateMut.mutate()}>
-                  {validateMut.isPending ? <><Spinner size={14} /> Starting...</> : 'Run Validation'}
+                  {validateMut.isPending ? <><Spinner size={14} /> {t('validation.starting')}</> : t('validation.runValidation')}
                 </button>
               </div>
             </>
@@ -190,45 +190,43 @@ export default function ValidationWizard() {
         </div>
       )}
 
-      {/* Step 3: Running */}
       {step === 'running' && validationRun && (
         <div className="card" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: 48 }}>
           <Loader2 size={48} color="var(--color-primary)" style={{ animation: 'spin 1s linear infinite' }} />
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 20 }}>Validation Running</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 20 }}>{t('validation.running')}</h2>
           <p style={{ color: 'var(--color-text-dim)', marginTop: 8, fontSize: 14 }}>
-            Processing your files against the selected ruleset...
+            {t('validation.processing')}
           </p>
           <div style={{ marginTop: 16 }}><StatusBadge status={validationRun.status} /></div>
         </div>
       )}
 
-      {/* Step 4: Done */}
       {step === 'done' && validationRun && (
         <div className="card" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: 48 }}>
           {validationRun.status === 'done' ? (
             <>
               <CheckCircle2 size={48} color="var(--color-success)" />
-              <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>Validation Complete</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>{t('validation.complete')}</h2>
               <p style={{ color: 'var(--color-text-dim)', marginTop: 8, fontSize: 14 }}>
-                {validationRun.findings_count} finding(s) detected
+                {t('validation.findingsDetected', { count: validationRun.findings_count ?? 0 })}
               </p>
             </>
           ) : (
             <>
               <AlertTriangle size={48} color="var(--color-error)" />
-              <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>Validation Failed</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 600, marginTop: 16 }}>{t('validation.failed')}</h2>
               <p style={{ color: 'var(--color-error)', marginTop: 8, fontSize: 14 }}>
-                {validationRun.error_message || 'An unexpected error occurred'}
+                {validationRun.error_message || t('validation.unexpectedError')}
               </p>
             </>
           )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 24 }}>
             <button className="btn-secondary" onClick={() => navigate(`/projects/${projectId}`)}>
-              Back to Project
+              {t('validation.backToProject')}
             </button>
             {validationRun.status === 'done' && (
               <button className="btn-primary" onClick={() => navigate(`/validations/${validationRun.validation_id}/findings`)}>
-                View Findings
+                {t('validation.viewFindings')}
               </button>
             )}
           </div>

@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 from src.app.domain.models import Revision, SourceFormat, ExtractedFact
-from src.app.storage import file_repo
+from src.app.storage import repo
 from src.app.ingestion.ifc_adapter import extract_facts_from_ifc
 from src.app.ingestion.pdf_adapter import extract_facts_from_pdf
 
@@ -30,8 +30,8 @@ async def run_ingestion(project_id: str, revision: Revision) -> list[ExtractedFa
 
         all_facts.extend(adapter_facts)
 
-    file_repo.save_facts(project_id, revision.revision_id, all_facts)
-    file_repo.log_audit_event(
+    repo.save_facts(project_id, revision.revision_id, all_facts)
+    repo.log_audit_event(
         "ingestion_complete",
         "revision",
         revision.revision_id,

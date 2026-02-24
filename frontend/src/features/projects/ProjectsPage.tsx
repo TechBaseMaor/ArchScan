@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FolderKanban, Plus } from 'lucide-react';
 import { listProjects, createProject } from '../../shared/api/projects';
 import { useToast } from '../../shared/components/Toast';
+import { useI18n } from '../../shared/i18n';
 import Modal from '../../shared/components/Modal';
 import Spinner from '../../shared/components/Spinner';
 import EmptyState from '../../shared/components/EmptyState';
@@ -12,6 +13,7 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showError, showSuccess } = useToast();
+  const { t, formatDate } = useI18n();
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -25,13 +27,13 @@ export default function ProjectsPage() {
     mutationFn: () => createProject(name, description),
     onSuccess: (proj) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      showSuccess(`Project "${proj.name}" created`);
+      showSuccess(t('projects.success', { name: proj.name }));
       setShowCreate(false);
       setName('');
       setDescription('');
       navigate(`/projects/${proj.project_id}`);
     },
-    onError: () => showError('Failed to create project'),
+    onError: () => showError(t('projects.error')),
   });
 
   if (isLoading) {
@@ -41,18 +43,18 @@ export default function ProjectsPage() {
   return (
     <>
       <div className="page-header">
-        <h1>Projects</h1>
+        <h1>{t('projects.title')}</h1>
         <button className="btn-primary" onClick={() => setShowCreate(true)}>
-          <Plus size={16} style={{ marginRight: 6, verticalAlign: -3 }} />
-          New Project
+          <Plus size={16} style={{ marginInlineEnd: 6, verticalAlign: -3 }} />
+          {t('projects.new')}
         </button>
       </div>
 
       {!projects?.length ? (
         <EmptyState
           icon={<FolderKanban size={48} />}
-          message="No projects yet. Create your first project to get started."
-          action={<button className="btn-primary" onClick={() => setShowCreate(true)}>Create Project</button>}
+          message={t('projects.empty')}
+          action={<button className="btn-primary" onClick={() => setShowCreate(true)}>{t('projects.createProject')}</button>}
         />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
@@ -69,28 +71,28 @@ export default function ProjectsPage() {
                 <p style={{ fontSize: 13, color: 'var(--color-text-dim)', marginBottom: 8 }}>{p.description}</p>
               )}
               <div style={{ fontSize: 12, color: 'var(--color-text-dim)' }}>
-                Created {new Date(p.created_at).toLocaleDateString()}
+                {t('common.created')} {formatDate(p.created_at)}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Create Project">
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t('projects.createModal.title')}>
         <form onSubmit={(e) => { e.preventDefault(); createMut.mutate(); }}>
           <div className="form-group">
-            <label>Project Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Tel Aviv Tower" required autoFocus />
+            <label>{t('projects.createModal.name')}</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('projects.createModal.namePlaceholder')} required autoFocus />
           </div>
           <div className="form-group">
-            <label>Description (optional)</label>
+            <label>{t('projects.createModal.description')}</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-              placeholder="Brief description of the project..." />
+              placeholder={t('projects.createModal.descriptionPlaceholder')} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-            <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
+            <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>{t('common.cancel')}</button>
             <button type="submit" className="btn-primary" disabled={!name.trim() || createMut.isPending}>
-              {createMut.isPending ? <Spinner size={14} /> : 'Create'}
+              {createMut.isPending ? <Spinner size={14} /> : t('common.create')}
             </button>
           </div>
         </form>

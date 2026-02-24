@@ -34,7 +34,7 @@ from src.app.domain.models import (
 from src.app.engine.rule_engine import evaluate_ruleset
 from src.app.ingestion.ifc_adapter import extract_facts_from_ifc
 from src.app.ingestion.pdf_adapter import extract_facts_from_pdf
-from src.app.storage import file_repo
+from src.app.storage import repo
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,9 @@ def run_benchmark(manifest: DatasetManifest, ruleset: Optional[RuleSet] = None) 
     started_at = datetime.utcnow()
 
     if ruleset is None:
-        ruleset = file_repo.get_ruleset(manifest.ruleset_id, manifest.ruleset_version)
+        ruleset = repo.get_ruleset(manifest.ruleset_id, manifest.ruleset_version)
         if ruleset is None:
-            ruleset = file_repo.get_ruleset(manifest.ruleset_id)
+            ruleset = repo.get_ruleset(manifest.ruleset_id)
         if ruleset is None:
             return BenchmarkRun(
                 benchmark_id=benchmark_id,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request
 from typing import Any
 
 from src.app.domain.models import (
@@ -11,13 +11,14 @@ from src.app.domain.models import (
     SourceFile,
     SourceFormat,
 )
-from src.app.storage import file_repo
+from src.app.storage import repo
 from src.app.ingestion.pipeline import run_ingestion
+from src.app.i18n import resolve_locale, t
 
 router = APIRouter()
 
 
-def _detect_format(filename: str) -> SourceFormat:
+def _detect_format(filename: str, locale: str = "en") -> SourceFormat:
     lower = filename.lower()
     if lower.endswith(".ifc"):
         return SourceFormat.IFC
@@ -25,38 +26,41 @@ def _detect_format(filename: str) -> SourceFormat:
         return SourceFormat.PDF
     if lower.endswith(".dwg"):
         return SourceFormat.DWG
-    raise HTTPException(status_code=400, detail=f"Unsupported file format: {filename}")
+    raise HTTPException(status_code=400, detail=t("error.unsupported_format", locale, filename=filename))
 
 
 @router.post("", response_model=Project)
 async def create_project(req: CreateProjectRequest):
     project = Project(name=req.name, description=req.description)
-    file_repo.save_project(project)
+    repo.save_project(project)
     return project
 
 
 @router.get("", response_model=list[Project])
 async def list_projects():
-    return file_repo.list_projects()
+    return repo.list_projects()
 
 
 @router.get("/{project_id}", response_model=Project)
-async def get_project(project_id: str):
-    proj = file_repo.get_project(project_id)
+async def get_project(project_id: str, request: Request):
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
     if not proj:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
     return proj
 
 
 @router.post("/{project_id}/revisions", response_model=Revision)
 async def create_revision(
     project_id: str,
+    request: Request,
     files: list[UploadFile] = File(...),
     metadata: str = Form("{}"),
 ):
-    proj = file_repo.get_project(project_id)
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
     if not proj:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
 
     import json
     try:
@@ -68,9 +72,9 @@ async def create_revision(
     sources: list[SourceFile] = []
 
     for upload in files:
-        fmt = _detect_format(upload.filename or "unknown")
+        fmt = _detect_format(upload.filename or "unknown", locale)
         content = await upload.read()
-        source_hash, stored_path = file_repo.store_source_file(project_id, upload.filename or "unknown", content)
+        source_hash, stored_path = repo.store_source_file(project_id, upload.filename or "unknown", content)
         sources.append(
             SourceFile(
                 file_name=upload.filename or "unknown",
@@ -82,7 +86,7 @@ async def create_revision(
         )
 
     revision.sources = sources
-    file_repo.save_revision(revision)
+    repo.save_revision(revision)
 
     await run_ingestion(project_id, revision)
 
@@ -91,17 +95,18 @@ async def create_revision(
 
 @router.get("/{project_id}/revisions", response_model=list[Revision])
 async def list_revisions(project_id: str):
-    return file_repo.list_revisions(project_id)
+    return repo.list_revisions(project_id)
 
 
 @router.get("/{project_id}/history", response_model=list[ProjectHistoryEntry])
-async def project_history(project_id: str):
-    proj = file_repo.get_project(project_id)
+async def project_history(project_id: str, request: Request):
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
     if not proj:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
 
-    revisions = file_repo.list_revisions(project_id)
-    validations = file_repo.list_validations_for_project(project_id)
+    revisions = repo.list_revisions(project_id)
+    validations = repo.list_validations_for_project(project_id)
 
     entries = []
     for rev in revisions:

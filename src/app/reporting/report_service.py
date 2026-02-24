@@ -5,12 +5,18 @@ import logging
 from datetime import datetime
 
 from src.app.domain.models import Finding, Severity, ValidationRun
-from src.app.storage.file_repo import report_path
+from src.app.storage.repo import report_path
+from src.app.i18n import t
 
 logger = logging.getLogger(__name__)
 
 
-def generate_pdf_report(validation_id: str, run: ValidationRun, findings: list[Finding]) -> str:
+def generate_pdf_report(
+    validation_id: str,
+    run: ValidationRun,
+    findings: list[Finding],
+    locale: str = "en",
+) -> str:
     try:
         from fpdf import FPDF
     except ImportError:
@@ -22,16 +28,16 @@ def generate_pdf_report(validation_id: str, run: ValidationRun, findings: list[F
     pdf.add_page()
 
     pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, "ArchScan Validation Report", new_x="LMARGIN", new_y="NEXT", align="C")
+    _cell_safe(pdf, 0, 10, t("report.title", locale), align="C")
     pdf.ln(5)
 
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, f"Validation ID: {validation_id}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"Project ID: {run.project_id}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"Revision ID: {run.revision_id}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"RuleSet ID: {run.ruleset_id}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"Status: {run.status.value}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"Generated: {datetime.utcnow().isoformat()}", new_x="LMARGIN", new_y="NEXT")
+    _cell_safe(pdf, 0, 6, f"{t('report.validation_id', locale)}: {validation_id}")
+    _cell_safe(pdf, 0, 6, f"{t('report.project_id', locale)}: {run.project_id}")
+    _cell_safe(pdf, 0, 6, f"{t('report.revision_id', locale)}: {run.revision_id}")
+    _cell_safe(pdf, 0, 6, f"{t('report.ruleset_id', locale)}: {run.ruleset_id}")
+    _cell_safe(pdf, 0, 6, f"{t('report.status', locale)}: {run.status.value}")
+    _cell_safe(pdf, 0, 6, f"{t('report.generated', locale)}: {datetime.utcnow().isoformat()}")
     pdf.ln(5)
 
     # ── Summary ────────────────────────────────────────────────────────
@@ -40,44 +46,53 @@ def generate_pdf_report(validation_id: str, run: ValidationRun, findings: list[F
     infos = sum(1 for f in findings if f.severity == Severity.INFO)
 
     pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Summary", new_x="LMARGIN", new_y="NEXT")
+    _cell_safe(pdf, 0, 8, t("report.summary", locale))
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, f"Total findings: {len(findings)}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"  Errors: {errors}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"  Warnings: {warnings}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"  Info: {infos}", new_x="LMARGIN", new_y="NEXT")
+    _cell_safe(pdf, 0, 6, f"{t('report.total_findings', locale)}: {len(findings)}")
+    _cell_safe(pdf, 0, 6, f"  {t('report.errors', locale)}: {errors}")
+    _cell_safe(pdf, 0, 6, f"  {t('report.warnings', locale)}: {warnings}")
+    _cell_safe(pdf, 0, 6, f"  {t('report.info', locale)}: {infos}")
     pdf.ln(5)
 
     # ── Findings detail ────────────────────────────────────────────────
     if findings:
         pdf.set_font("Helvetica", "B", 12)
-        pdf.cell(0, 8, "Findings Detail", new_x="LMARGIN", new_y="NEXT")
+        _cell_safe(pdf, 0, 8, t("report.findings_detail", locale))
 
         for i, finding in enumerate(findings, 1):
             pdf.ln(3)
             pdf.set_font("Helvetica", "B", 10)
             severity_label = finding.severity.value.upper()
-            pdf.cell(0, 6, f"#{i} [{severity_label}] {finding.rule_ref}", new_x="LMARGIN", new_y="NEXT")
+            _cell_safe(pdf, 0, 6, f"#{i} [{severity_label}] {finding.rule_ref}")
 
             pdf.set_font("Helvetica", "", 9)
-            _multi_cell_safe(pdf, f"Message: {finding.message}")
-            _multi_cell_safe(pdf, f"Formula: {finding.computation_trace.formula}")
-            _multi_cell_safe(pdf, f"Inputs: {finding.computation_trace.inputs}")
-            _multi_cell_safe(pdf, f"Result: {finding.computation_trace.result}")
+            _multi_cell_safe(pdf, f"{t('report.message', locale)}: {finding.message}")
+            _multi_cell_safe(pdf, f"{t('report.formula', locale)}: {finding.computation_trace.formula}")
+            _multi_cell_safe(pdf, f"{t('report.inputs', locale)}: {finding.computation_trace.inputs}")
+            _multi_cell_safe(pdf, f"{t('report.result', locale)}: {finding.computation_trace.result}")
             if finding.computation_trace.tolerance_applied:
-                _multi_cell_safe(pdf, f"Tolerance: {finding.computation_trace.tolerance_applied}")
-            _multi_cell_safe(pdf, f"Source hashes: {', '.join(finding.source_hashes)}")
-            _multi_cell_safe(pdf, f"Fact IDs: {', '.join(finding.input_facts)}")
+                _multi_cell_safe(pdf, f"{t('report.tolerance', locale)}: {finding.computation_trace.tolerance_applied}")
+            _multi_cell_safe(pdf, f"{t('report.source_hashes', locale)}: {', '.join(finding.source_hashes)}")
+            _multi_cell_safe(pdf, f"{t('report.fact_ids', locale)}: {', '.join(finding.input_facts)}")
 
     else:
         pdf.set_font("Helvetica", "I", 10)
-        pdf.cell(0, 8, "No findings - all checks passed.", new_x="LMARGIN", new_y="NEXT")
+        _cell_safe(pdf, 0, 8, t("report.no_findings", locale))
 
     out_path = report_path(validation_id)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     pdf.output(str(out_path))
     logger.info("PDF report written to %s", out_path)
     return str(out_path)
+
+
+def _cell_safe(pdf, w, h, text: str, align: str = ""):
+    """Write a single-line cell, sanitizing non-latin-1 characters."""
+    safe = text.encode("latin-1", errors="replace").decode("latin-1")
+    if align:
+        pdf.cell(w, h, safe, new_x="LMARGIN", new_y="NEXT", align=align)
+    else:
+        pdf.cell(w, h, safe, new_x="LMARGIN", new_y="NEXT")
 
 
 def _multi_cell_safe(pdf, text: str):

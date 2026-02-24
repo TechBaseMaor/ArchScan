@@ -15,6 +15,23 @@
   --radius-lg: 12px;
   --shadow: 0 1px 3px rgba(0,0,0,.3);
   --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --sidebar-width: 220px;
+}
+
+[data-theme="light"] {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f1f4;
+  --color-border: #e0e2e8;
+  --color-text: #1e2028;
+  --color-text-dim: #6b7084;
+  --color-primary: #4f6cdb;
+  --color-primary-hover: #3d58c4;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -115,7 +132,7 @@ table {
   border-collapse: collapse;
 }
 th, td {
-  text-align: left;
+  text-align: start;
   padding: 10px 12px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -153,6 +170,8 @@ tbody tr:hover { background: rgba(108,138,255,.04); }
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .page-header h1 {
   font-size: 24px;
@@ -174,7 +193,7 @@ tbody tr:hover { background: rgba(108,138,255,.04); }
 .toast-container {
   position: fixed;
   top: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -188,5 +207,113 @@ tbody tr:hover { background: rgba(108,138,255,.04); }
   animation: slideIn 0.2s ease;
 }
 .toast-error { background: var(--color-error); color: #fff; }
-.toast-success { background: var(--color-success); color: #000; }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast-success { background: var(--color-success); color: #fff; }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+[dir="rtl"] .toast-container {
+  animation-name: slideInRtl;
+}
+@keyframes slideInRtl {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Sidebar ─────────────────────────────────── */
+
+.sidebar {
+  background: var(--color-surface);
+  border-inline-end: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.sidebar-desktop {
+  width: var(--sidebar-width);
+}
+
+.sidebar-mobile {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--sidebar-width);
+  z-index: 1001;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 2px 0 12px rgba(0,0,0,.3);
+  display: none;
+}
+[dir="rtl"] .sidebar-mobile {
+  transform: translateX(100%);
+}
+.sidebar-mobile-open {
+  transform: translateX(0) !important;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 1000;
+  display: none;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--color-surface-2);
+  color: var(--color-text-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sidebar-btn:hover { background: var(--color-border); }
+
+.mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Responsive ─────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .sidebar-desktop { display: none; }
+  .sidebar-mobile { display: flex; }
+  .sidebar-overlay { display: block; }
+  .mobile-header { display: flex; }
+
+  .main-content { padding: 16px !important; }
+  .page-header h1 { font-size: 20px; }
+
+  .card { padding: 16px; }
+}
+
+@media (max-width: 639px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-header .btn-primary,
+  .page-header .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Table horizontal scroll wrapper */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
