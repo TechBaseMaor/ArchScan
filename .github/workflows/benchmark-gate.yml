@@ -1,0 +1,44 @@
+name: Benchmark KPI Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate synthetic test PDFs
+        run: python scripts/generate_synthetic_pdfs.py
+
+      - name: Sync golden dataset
+        run: python scripts/sync_dataset.py --force
+
+      - name: Validate dataset integrity
+        run: python scripts/sync_dataset.py --validate-only
+
+      - name: Run KPI benchmark
+        run: python scripts/run_benchmark.py
+
+      - name: Upload benchmark artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: data/benchmarks/*.json
+          retention-days: 90
