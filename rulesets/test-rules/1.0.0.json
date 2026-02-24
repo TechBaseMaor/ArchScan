@@ -1,0 +1,64 @@
+{
+  "ruleset_id": "test-rules",
+  "name": "Test Rules",
+  "jurisdiction": "IL",
+  "version": "1.0.0",
+  "effective_date": "2026-02-24",
+  "rules": [
+    {
+      "rule_id": "TEST-AREA-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": null,
+      "effective_to": null,
+      "severity": "error",
+      "description": "",
+      "preconditions": [
+        {
+          "fact_category": "area",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "area_max_check",
+        "parameters": {
+          "max_area": 100
+        }
+      },
+      "evidence_template": {
+        "description": "",
+        "required_fact_categories": []
+      }
+    },
+    {
+      "rule_id": "TEST-HEIGHT-MIN",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": null,
+      "effective_to": null,
+      "severity": "error",
+      "description": "",
+      "preconditions": [
+        {
+          "fact_category": "height",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "height_min_check",
+        "parameters": {
+          "min_height": 2.5
+        }
+      },
+      "evidence_template": {
+        "description": "",
+        "required_fact_categories": []
+      }
+    }
+  ],
+  "created_at": "2026-02-24T02:01:47.888379"
+}

@@ -1,0 +1,206 @@
+{
+  "ruleset_id": "israel_residential_v1",
+  "name": "Israel Residential Building Regulations v1",
+  "jurisdiction": "IL",
+  "version": "1.0.0",
+  "effective_date": "2024-01-01",
+  "rules": [
+    {
+      "rule_id": "IL-RES-AREA-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "error",
+      "description": "Maximum allowed built area per unit shall not exceed the permitted area as defined in the building permit.",
+      "preconditions": [
+        {
+          "fact_category": "area",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "area_max_check",
+        "parameters": {
+          "max_area": 200.0
+        }
+      },
+      "evidence_template": {
+        "description": "Area measurement from model vs. max allowed area",
+        "required_fact_categories": [
+          "area"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-AREA-MIN",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "warning",
+      "description": "Minimum habitable room area requirement.",
+      "preconditions": [
+        {
+          "fact_category": "area",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "area_min_check",
+        "parameters": {
+          "min_area": 8.0
+        }
+      },
+      "evidence_template": {
+        "description": "Area measurement must meet minimum habitable threshold",
+        "required_fact_categories": [
+          "area"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-HEIGHT-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "error",
+      "description": "Maximum floor-to-ceiling height shall not exceed permitted value.",
+      "preconditions": [
+        {
+          "fact_category": "height",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "height_max_check",
+        "parameters": {
+          "max_height": 4.0
+        }
+      },
+      "evidence_template": {
+        "description": "Height measurement vs. regulatory maximum",
+        "required_fact_categories": [
+          "height"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-HEIGHT-MIN",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "error",
+      "description": "Minimum floor-to-ceiling height for habitable rooms.",
+      "preconditions": [
+        {
+          "fact_category": "height",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "height_min_check",
+        "parameters": {
+          "min_height": 2.5
+        }
+      },
+      "evidence_template": {
+        "description": "Height measurement vs. regulatory minimum",
+        "required_fact_categories": [
+          "height"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-SETBACK-MIN",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "error",
+      "description": "Minimum setback distance from property boundary.",
+      "preconditions": [
+        {
+          "fact_category": "setback",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "setback_min_check",
+        "parameters": {
+          "min_setback": 3.0
+        }
+      },
+      "evidence_template": {
+        "description": "Setback distance vs. regulatory minimum",
+        "required_fact_categories": [
+          "setback"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-CROSS-DOC-AREA",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "warning",
+      "description": "Cross-document consistency check: model area vs. document stated area.",
+      "preconditions": [],
+      "computation": {
+        "formula": "cross_document_area_consistency",
+        "parameters": {
+          "max_deviation_pct": 0.5
+        }
+      },
+      "evidence_template": {
+        "description": "Geometric area from IFC model compared against textual area from PDF document",
+        "required_fact_categories": [
+          "area"
+        ]
+      }
+    },
+    {
+      "rule_id": "IL-RES-INTERSECTIONS",
+      "version": "1.0",
+      "jurisdiction": "IL",
+      "effective_from": "2024-01-01",
+      "effective_to": null,
+      "severity": "warning",
+      "description": "Maximum allowable wall intersection/overlap count.",
+      "preconditions": [
+        {
+          "fact_category": "intersection",
+          "operator": "exists",
+          "value": null,
+          "value_max": null
+        }
+      ],
+      "computation": {
+        "formula": "intersection_count_max",
+        "parameters": {
+          "max_intersections": 5
+        }
+      },
+      "evidence_template": {
+        "description": "Wall intersection count vs. maximum threshold",
+        "required_fact_categories": [
+          "intersection"
+        ]
+      }
+    }
+  ],
+  "created_at": "2026-02-24T02:04:06.255395"
+}

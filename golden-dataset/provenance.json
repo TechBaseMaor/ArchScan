@@ -1,0 +1,110 @@
+{
+  "simple-wall-ifc4": {
+    "entry_id": "simple-wall-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-wall-ifc4.ifc",
+    "actual_checksum": "c361d2709c181c45",
+    "downloaded_at": "2026-02-24T02:30:45.056320",
+    "error_message": null,
+    "file_size_bytes": 22234
+  },
+  "simple-cube-ifc4": {
+    "entry_id": "simple-cube-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-cube-ifc4.ifc",
+    "actual_checksum": "6f90cfd2641e868b",
+    "downloaded_at": "2026-02-24T02:30:45.340433",
+    "error_message": null,
+    "file_size_bytes": 10611
+  },
+  "simple-basin-ifc4": {
+    "entry_id": "simple-basin-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-basin-ifc4.ifc",
+    "actual_checksum": "46682d569775e46c",
+    "downloaded_at": "2026-02-24T02:30:45.733022",
+    "error_message": null,
+    "file_size_bytes": 31853
+  },
+  "simple-wallelement-ifc4": {
+    "entry_id": "simple-wallelement-ifc4",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-wallelement-ifc4.ifc",
+    "actual_checksum": "b53dd7603e5e86a6",
+    "downloaded_at": "2026-02-24T02:30:46.106030",
+    "error_message": null,
+    "file_size_bytes": 25510
+  },
+  "medium-bimwhale-house": {
+    "entry_id": "medium-bimwhale-house",
+    "status": "downloaded",
+    "local_path": "golden-dataset/medium/medium-bimwhale-house.ifc",
+    "actual_checksum": "540d75a15923ce7e",
+    "downloaded_at": "2026-02-24T02:30:48.566706",
+    "error_message": null,
+    "file_size_bytes": 52702577
+  },
+  "medium-duplex-arch": {
+    "entry_id": "medium-duplex-arch",
+    "status": "downloaded",
+    "local_path": "golden-dataset/medium/medium-duplex-arch.ifc",
+    "actual_checksum": "b347a2c8aa8fff6d",
+    "downloaded_at": "2026-02-24T02:30:49.361368",
+    "error_message": null,
+    "file_size_bytes": 2380763
+  },
+  "regulatory-pdf-taba": {
+    "entry_id": "regulatory-pdf-taba",
+    "status": "downloaded",
+    "local_path": "golden-dataset/regulatory_text/regulatory-pdf-taba.pdf",
+    "actual_checksum": "23e32b73e0f3cd0d",
+    "downloaded_at": "2026-02-24T02:30:51.953090",
+    "error_message": null,
+    "file_size_bytes": 4619687
+  },
+  "regulatory-pdf-raanana": {
+    "entry_id": "regulatory-pdf-raanana",
+    "status": "downloaded",
+    "local_path": "golden-dataset/regulatory_text/regulatory-pdf-raanana.pdf",
+    "actual_checksum": "0a70d66a648f3267",
+    "downloaded_at": "2026-02-24T02:30:52.123024",
+    "error_message": null,
+    "file_size_bytes": 109866
+  },
+  "simple-synthetic-area-violation": {
+    "entry_id": "simple-synthetic-area-violation",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-synthetic-area-violation.pdf",
+    "actual_checksum": "7e2e4200ccd8aa07",
+    "downloaded_at": "2026-02-24T02:30:52.123746",
+    "error_message": null,
+    "file_size_bytes": 1029
+  },
+  "simple-synthetic-height-violation": {
+    "entry_id": "simple-synthetic-height-violation",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-synthetic-height-violation.pdf",
+    "actual_checksum": "880516c9bccc0692",
+    "downloaded_at": "2026-02-24T02:30:52.124264",
+    "error_message": null,
+    "file_size_bytes": 1031
+  },
+  "simple-synthetic-setback-violation": {
+    "entry_id": "simple-synthetic-setback-violation",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-synthetic-setback-violation.pdf",
+    "actual_checksum": "ea9af53b2c8484be",
+    "downloaded_at": "2026-02-24T02:30:52.124736",
+    "error_message": null,
+    "file_size_bytes": 1032
+  },
+  "simple-synthetic-clean": {
+    "entry_id": "simple-synthetic-clean",
+    "status": "downloaded",
+    "local_path": "golden-dataset/simple/simple-synthetic-clean.pdf",
+    "actual_checksum": "adafa2e9304a85ce",
+    "downloaded_at": "2026-02-24T02:30:52.125360",
+    "error_message": null,
+    "file_size_bytes": 1030
+  }
+}

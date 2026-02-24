@@ -1,0 +1,220 @@
+{
+  "version": "1.1.0",
+  "description": "ArchScan Golden Dataset v1.1 - first-wave 12 entries for KPI evaluation",
+  "ruleset_id": "israel_residential_v1",
+  "ruleset_version": "1.0.0",
+  "entries": [
+    {
+      "entry_id": "simple-wall-ifc4",
+      "name": "IFC4 Wall Standard Case",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_SampleHouse_IfcWallStandardCase.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["wall", "basic", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"element_type": "wall"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "simple-cube-ifc4",
+      "name": "IFC4 Cube Advanced Brep",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_CubeAdvancedBrep.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["cube", "geometry", "brep", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"element_type": "cube"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "simple-basin-ifc4",
+      "name": "IFC4 Basin Faceted Brep",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_BasinFacetedBrep.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["basin", "geometry", "faceted-brep", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"element_type": "basin"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "simple-wallelement-ifc4",
+      "name": "IFC4 Wall Elemented Case",
+      "category": "simple",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc4_WallElementedCase.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC4",
+      "tags": ["wall", "elemented", "ifc4"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"element_type": "wall-elemented"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "medium-bimwhale-house",
+      "name": "BIM Whale Basic House",
+      "category": "medium",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/andrewisen/bim-whale-ifc-samples/main/BasicHouse/IFC/BasicHouse.ifc",
+      "download_policy": "auto",
+      "license_note": "MIT License - bim-whale-ifc-samples",
+      "ifc_version": "IFC4",
+      "tags": ["building", "revit", "house", "multi-storey"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "bim-whale"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "medium-duplex-arch",
+      "name": "Duplex Apartment Architecture (IFC2x3)",
+      "category": "medium",
+      "source_format": "ifc",
+      "source_url": "https://raw.githubusercontent.com/youshengCode/IfcSampleFiles/main/Ifc2x3_Duplex_Architecture.ifc",
+      "download_policy": "auto",
+      "license_note": "Open sample from youshengCode/IfcSampleFiles",
+      "ifc_version": "IFC2X3",
+      "tags": ["duplex", "apartment", "multi-room", "ifc2x3"],
+      "baseline_status": "exploratory",
+      "ground_truth": {
+        "extra": {"source": "IfcSampleFiles"}
+      },
+      "expected_findings": []
+    },
+    {
+      "entry_id": "regulatory-pdf-taba",
+      "name": "Israeli Planning Document (Taba)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "https://apps.land.gov.il/IturTabotData/nispachim/merkaz/4051076/4.pdf",
+      "download_policy": "auto",
+      "license_note": "Government of Israel - public planning document",
+      "tags": ["hebrew", "taba", "regulatory", "planning"],
+      "baseline_status": "exploratory",
+      "notes": "Aggressive auto attempt - government PDF"
+    },
+    {
+      "entry_id": "regulatory-pdf-raanana",
+      "name": "Raanana Plan Instructions (Taba)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "https://apps.land.gov.il/IturTabotData/takanonim/merkaz/4023472.pdf",
+      "download_policy": "auto",
+      "license_note": "Government of Israel - public planning document (Raanana)",
+      "tags": ["hebrew", "raanana", "regulatory", "setback", "height"],
+      "baseline_status": "exploratory",
+      "notes": "Raanana plan instructions - setback/height/area rules source"
+    },
+    {
+      "entry_id": "simple-synthetic-area-violation",
+      "name": "Synthetic PDF with area exceeding 200 m2",
+      "category": "simple",
+      "source_format": "pdf",
+      "source_url": "local://synthetic",
+      "download_policy": "manual",
+      "license_note": "Generated locally for testing",
+      "tags": ["synthetic", "area-violation"],
+      "baseline_status": "gating",
+      "ground_truth": {
+        "gross_area": 250.0,
+        "max_height": 3.0,
+        "min_setback": 5.0
+      },
+      "expected_findings": [
+        {
+          "rule_id": "IL-RES-AREA-MAX",
+          "rule_version": "1.0",
+          "severity": "error",
+          "expected": true,
+          "description": "Area 250 m2 exceeds max 200 m2"
+        }
+      ]
+    },
+    {
+      "entry_id": "simple-synthetic-height-violation",
+      "name": "Synthetic PDF with height below minimum",
+      "category": "simple",
+      "source_format": "pdf",
+      "source_url": "local://synthetic",
+      "download_policy": "manual",
+      "license_note": "Generated locally for testing",
+      "tags": ["synthetic", "height-violation"],
+      "baseline_status": "gating",
+      "ground_truth": {
+        "gross_area": 100.0,
+        "max_height": 2.0,
+        "min_setback": 5.0
+      },
+      "expected_findings": [
+        {
+          "rule_id": "IL-RES-HEIGHT-MIN",
+          "rule_version": "1.0",
+          "severity": "error",
+          "expected": true,
+          "description": "Height 2.0 m below minimum 2.5 m"
+        }
+      ]
+    },
+    {
+      "entry_id": "simple-synthetic-setback-violation",
+      "name": "Synthetic PDF with setback below minimum",
+      "category": "simple",
+      "source_format": "pdf",
+      "source_url": "local://synthetic",
+      "download_policy": "manual",
+      "license_note": "Generated locally for testing",
+      "tags": ["synthetic", "setback-violation"],
+      "baseline_status": "gating",
+      "ground_truth": {
+        "gross_area": 100.0,
+        "max_height": 3.0,
+        "min_setback": 1.5
+      },
+      "expected_findings": [
+        {
+          "rule_id": "IL-RES-SETBACK-MIN",
+          "rule_version": "1.0",
+          "severity": "error",
+          "expected": true,
+          "description": "Setback 1.5 m below minimum 3.0 m"
+        }
+      ]
+    },
+    {
+      "entry_id": "simple-synthetic-clean",
+      "name": "Synthetic PDF fully compliant",
+      "category": "simple",
+      "source_format": "pdf",
+      "source_url": "local://synthetic",
+      "download_policy": "manual",
+      "license_note": "Generated locally for testing",
+      "tags": ["synthetic", "clean", "compliant"],
+      "baseline_status": "gating",
+      "ground_truth": {
+        "gross_area": 120.0,
+        "max_height": 3.0,
+        "min_setback": 5.0
+      },
+      "expected_findings": []
+    }
+  ]
+}
