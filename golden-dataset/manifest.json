@@ -30,7 +30,7 @@
       "license_note": "Open sample from youshengCode/IfcSampleFiles",
       "ifc_version": "IFC4",
       "tags": ["cube", "geometry", "brep", "ifc4"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "ground_truth": {
         "extra": {"element_type": "cube"}
       },
@@ -46,7 +46,7 @@
       "license_note": "Open sample from youshengCode/IfcSampleFiles",
       "ifc_version": "IFC4",
       "tags": ["basin", "geometry", "faceted-brep", "ifc4"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "ground_truth": {
         "extra": {"element_type": "basin"}
       },
@@ -62,7 +62,7 @@
       "license_note": "Open sample from youshengCode/IfcSampleFiles",
       "ifc_version": "IFC4",
       "tags": ["wall", "elemented", "ifc4"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "ground_truth": {
         "extra": {"element_type": "wall-elemented"}
       },
@@ -109,7 +109,7 @@
       "download_policy": "auto",
       "license_note": "Government of Israel - public planning document",
       "tags": ["hebrew", "taba", "regulatory", "planning"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "notes": "Aggressive auto attempt - government PDF"
     },
     {
@@ -121,7 +121,7 @@
       "download_policy": "auto",
       "license_note": "Government of Israel - public planning document (Raanana)",
       "tags": ["hebrew", "raanana", "regulatory", "setback", "height"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "notes": "Raanana plan instructions - setback/height/area rules source"
     },
     {
@@ -245,7 +245,7 @@
       "download_policy": "auto",
       "license_note": "Haifa Municipality - public spatial guidelines",
       "tags": ["hebrew", "haifa", "regulatory", "area-calc", "height"],
-      "baseline_status": "exploratory",
+      "baseline_status": "gating",
       "notes": "Haifa spatial guidelines - area calculation and height rules"
     },
     {
