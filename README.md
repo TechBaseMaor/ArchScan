@@ -19,6 +19,36 @@ python run.py
 python -m pytest tests/ -v
 ```
 
+## Frontend (React UI)
+
+```bash
+cd frontend
+npm install
+npm run dev
+# UI available at http://localhost:5173
+```
+
+The frontend connects to the backend at `http://localhost:8000`. Run both simultaneously:
+
+```bash
+# Terminal 1 — Backend
+python run.py
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev
+```
+
+### UI Screens
+
+| Screen | Path | Description |
+|--------|------|-------------|
+| Projects | `/` | List, create, and manage projects |
+| Project Detail | `/projects/:id` | Revisions, history, launch validation |
+| Upload & Validate | `/projects/:id/validate` | Upload files, select ruleset, run validation |
+| Findings | `/validations/:id/findings` | View findings, download PDF/JSON reports |
+| Rulesets | `/rulesets` | List, create, inspect regulatory rulesets |
+| Benchmarks | `/benchmarks` | Run benchmarks, view KPI metrics and gate status |
+
 ## Golden Dataset and Benchmarks
 
 ```bash
@@ -98,6 +128,7 @@ src/app/
   reporting/           # PDF report generation
   dataset/             # Golden dataset manifest, fetcher, validator
   benchmark/           # KPI evaluator + benchmark runner
+frontend/              # React + TypeScript UI (Vite)
 data/                  # Local file-backed storage (auto-created)
 data/benchmarks/       # Benchmark run results
 rulesets/              # Versioned JSON rule definitions
