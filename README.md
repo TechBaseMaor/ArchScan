@@ -147,6 +147,18 @@ git push origin main
 |----------|---------|
 | `VITE_API_BASE_URL` | Backend URL (e.g. `https://archscan.onrender.com`) |
 
+### Pre-deployment checklist
+
+Before deploying, verify these environment variables are configured correctly:
+
+| Where | Variable | Required value |
+|-------|----------|---------------|
+| Netlify → Environment variables | `VITE_API_BASE_URL` | `https://archscan.onrender.com` |
+| Render → Environment | `DATABASE_URL` | Neon pooled connection string |
+| Render → Environment | `ALLOWED_ORIGINS` | `https://archscan-planandgo.netlify.app` |
+
+The frontend build will fail in CI if `VITE_API_BASE_URL` is missing or points to localhost (see `frontend/scripts/validate-env.js`). The backend logs a warning at startup if `ALLOWED_ORIGINS` is missing in production.
+
 ### Post-deploy verification
 
 ```bash
@@ -170,6 +182,43 @@ curl https://archscan.onrender.com/health
 | Frontend shows blank / localhost errors | `VITE_API_BASE_URL` not set in Netlify | Add env var in Netlify → Environment variables, re-deploy |
 | `channel_binding` error | Neon URL incompatibility | Already handled in code (`config.py`) |
 | Deploy not triggered | Auto-deploy off | Check Render Settings → Build & Deploy → Auto-Deploy = Yes |
+
+## ENV Security Policy
+
+### Principles
+
+- **Secrets live only in deploy platforms** (Render, Netlify) — never in the repo.
+- **Frontend (VITE_\*)** vars are public by design — they are embedded into the JS bundle. Never put API keys, tokens, passwords, or DB URLs in `VITE_*` vars.
+- **Backend** reads secrets from runtime environment only (`DATABASE_URL`, etc.). Logs mask sensitive values.
+
+### What goes where
+
+| Variable | Where to set | Public? |
+|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Netlify env vars | Yes (just a URL) |
+| `DATABASE_URL` | Render env vars | **No** (contains credentials) |
+| `ALLOWED_ORIGINS` | Render env vars | Yes (just domain names) |
+| Future API keys | Render env vars | **No** |
+
+### Guardrails in place
+
+| Guard | What it does |
+|-------|-------------|
+| `frontend/scripts/validate-env.js` | Fails build if `VITE_API_BASE_URL` is missing/localhost in CI, or if secret-looking `VITE_*` vars are detected |
+| `src/app/config.py` | Warns at startup if production is missing `ALLOWED_ORIGINS`; masks DB URL in logs |
+| `scripts/check_env_safety.sh` | Scans for secrets in frontend source, verifies .env files aren't staged in git |
+| `scripts/init_env.sh` | Creates local `.env` from `.env.example` templates (never overwrites) |
+| `.gitignore` | Blocks all `.env` files; only `.env.example` templates are tracked |
+
+### Local setup
+
+```bash
+# First time: generate .env files from templates
+./scripts/init_env.sh
+
+# Before committing: run safety check
+./scripts/check_env_safety.sh
+```
 
 ## Project Structure
 

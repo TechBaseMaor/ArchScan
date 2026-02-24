@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Production smoke test — run manually to verify deployment health.
-# Usage: ./scripts/smoke_prod.sh [API_BASE]
-#   Default API_BASE: https://archscan.onrender.com
+# Usage: ./scripts/smoke_prod.sh [API_BASE] [FRONTEND_URL]
+#   Default API_BASE:     https://archscan.onrender.com
+#   Default FRONTEND_URL: https://archscan-planandgo.netlify.app
 
 set -euo pipefail
 
@@ -49,6 +50,15 @@ d = json.load(urllib.request.urlopen('$API/projects'))
 assert isinstance(d, list)
 "
 
+# 7. CORS preflight returns correct origin
+FRONTEND="${2:-https://archscan-planandgo.netlify.app}"
+ACAO=$(curl -s -D - -o /dev/null -X OPTIONS \
+  -H "Origin: $FRONTEND" \
+  -H "Access-Control-Request-Method: GET" \
+  "$API/health" 2>/dev/null | grep -i "access-control-allow-origin" | tr -d '\r')
+echo "  CORS header: $ACAO"
+check "CORS preflight includes frontend origin" echo "$ACAO" | grep -qi "$FRONTEND"
+
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="
 
@@ -56,6 +66,7 @@ if [ "$FAIL" -gt 0 ]; then
   echo ""
   echo "Troubleshooting hints:"
   [ "$STORAGE" != "postgres" ] && echo "  - DATABASE_URL may be missing in Render Environment"
+  echo "$ACAO" | grep -qi "$FRONTEND" || echo "  - ALLOWED_ORIGINS may be missing in Render Environment"
   echo "  - Check Render logs: https://dashboard.render.com"
   echo "  - Check Neon dashboard for connection issues"
   exit 1

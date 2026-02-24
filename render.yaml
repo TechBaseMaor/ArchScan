@@ -10,8 +10,8 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        sync: false
+        sync: false  # Neon pooled connection string — set in Render dashboard
       - key: ALLOWED_ORIGINS
-        sync: false
+        sync: false  # e.g. https://archscan-planandgo.netlify.app — set in Render dashboard
       - key: PYTHON_VERSION
         value: "3.11"

@@ -71,6 +71,26 @@ jobs:
           print('Schema valid:', json.dumps(d))
           "
 
+      - name: CORS preflight allows frontend origin
+        run: |
+          CORS_ORIGIN=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X OPTIONS \
+            -H "Origin: $FRONTEND_URL" \
+            -H "Access-Control-Request-Method: GET" \
+            "$API_BASE/health")
+          echo "Preflight HTTP: $CORS_ORIGIN"
+          test "$CORS_ORIGIN" = "200"
+
+          ACAO=$(curl -s -D - -o /dev/null \
+            -X OPTIONS \
+            -H "Origin: $FRONTEND_URL" \
+            -H "Access-Control-Request-Method: GET" \
+            "$API_BASE/health" | grep -i "access-control-allow-origin" | tr -d '\r')
+          echo "Header: $ACAO"
+          echo "$ACAO" | grep -qi "$FRONTEND_URL" \
+            && echo "CORS origin OK" \
+            || { echo "::error::CORS Access-Control-Allow-Origin does not include $FRONTEND_URL"; exit 1; }
+
   smoke-frontend:
     needs: wait-for-deploy
     runs-on: ubuntu-latest
@@ -85,3 +105,21 @@ jobs:
       - name: Frontend HTML contains app root
         run: |
           curl -sf "$FRONTEND_URL" | grep -q "ArchScan" && echo "App title found" || echo "::warning::ArchScan title not found in HTML"
+
+      - name: Frontend bundle does not contain localhost API
+        run: |
+          BUNDLE=$(curl -sf "$FRONTEND_URL")
+          if echo "$BUNDLE" | grep -q "localhost:8000"; then
+            echo "::error::Frontend bundle contains localhost:8000 — VITE_API_BASE_URL was not set during build"
+            exit 1
+          fi
+          echo "No localhost references in HTML — OK"
+
+  env-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run env safety checks
+        run: ./scripts/check_env_safety.sh

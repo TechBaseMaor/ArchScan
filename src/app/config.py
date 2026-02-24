@@ -1,7 +1,10 @@
+import logging
 import os
 import re
 from pathlib import Path
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class ToleranceConfig(BaseModel):
@@ -49,6 +52,18 @@ def _sanitize_db_url(url: str) -> str:
     return re.sub(r"[&?]channel_binding=[^&]*", "", url)
 
 
+def _mask_url(url: str) -> str:
+    """Show scheme + host only, hiding credentials and path details."""
+    if not url:
+        return "(empty)"
+    try:
+        from urllib.parse import urlparse
+        p = urlparse(url)
+        return f"{p.scheme}://{p.hostname or '?'}:***"
+    except Exception:
+        return "***"
+
+
 def _build_settings() -> AppConfig:
     overrides: dict = {}
     if db_url := os.environ.get("DATABASE_URL"):
@@ -56,7 +71,29 @@ def _build_settings() -> AppConfig:
     if origins_raw := os.environ.get("ALLOWED_ORIGINS"):
         extra = [o.strip() for o in origins_raw.split(",") if o.strip()]
         overrides["allowed_origins"] = _DEFAULT_ORIGINS + extra
-    return AppConfig(**overrides)
+
+    cfg = AppConfig(**overrides)
+    _validate_production_env(cfg)
+    return cfg
+
+
+def _validate_production_env(cfg: AppConfig) -> None:
+    """Log environment status; warn loudly if production config is incomplete."""
+    is_production = cfg.use_postgres
+
+    if is_production:
+        logger.info("Environment: PRODUCTION (DATABASE_URL → %s)", _mask_url(cfg.database_url))
+
+        if not os.environ.get("ALLOWED_ORIGINS"):
+            logger.warning(
+                "ALLOWED_ORIGINS is missing in production. "
+                "Only localhost origins will be allowed — the frontend will get CORS errors. "
+                "Set ALLOWED_ORIGINS=https://archscan-planandgo.netlify.app in Render → Environment."
+            )
+    else:
+        logger.info("Environment: LOCAL DEV (no DATABASE_URL, using file storage)")
+
+    logger.info("CORS allowed_origins (%d): %s", len(cfg.allowed_origins), cfg.allowed_origins)
 
 
 settings = _build_settings()

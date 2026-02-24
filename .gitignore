@@ -29,6 +29,18 @@ Thumbs.db
 htmlcov/
 .coverage
 
+# Environment files (secrets must never be committed)
+# Only .env.example templates are tracked.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.env.production
+
 # Frontend build artifacts
 frontend/dist/
 frontend/node_modules/

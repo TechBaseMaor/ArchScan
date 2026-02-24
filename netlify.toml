@@ -1,3 +1,8 @@
+# Required environment variable (set in Netlify UI → Site settings → Environment variables):
+#   VITE_API_BASE_URL = https://archscan.onrender.com
+# The prebuild script (frontend/scripts/validate-env.js) will fail the build
+# if this variable is missing or set to localhost in CI.
+
 [build]
   base = "frontend"
   command = "npm install && npm run build"

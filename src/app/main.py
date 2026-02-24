@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
         d.mkdir(parents=True, exist_ok=True)
 
     if settings.use_postgres:
-        logger.info("DATABASE_URL detected — bootstrapping Postgres schema")
+        logger.info("Bootstrapping Postgres schema")
         bootstrap_schema()
 
     await validation_manager.start()
