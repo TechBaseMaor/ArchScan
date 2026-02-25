@@ -264,6 +264,27 @@ class DocumentCoverage(BaseModel):
     rules_evaluated: int = 0
 
 
+class MissingEvidence(BaseModel):
+    """Explicit record of a parameter that could not be verified."""
+    category: str
+    expected_source: str
+    reason: str
+    severity: Severity = Severity.WARNING
+
+
+class ExtractedMetricSummary(BaseModel):
+    """Aggregated metric for the pilot compliance report."""
+    category: str
+    label: str
+    value: Any = None
+    unit: str = ""
+    source_file: str = ""
+    source_role: str = ""
+    confidence: float = 1.0
+    is_missing: bool = False
+    missing_reason: str = ""
+
+
 class ComplianceReport(BaseModel):
     """Bundle-level compliance report with grouped findings."""
     validation_id: str
@@ -272,6 +293,8 @@ class ComplianceReport(BaseModel):
     groups: list[ComplianceGroup] = Field(default_factory=list)
     document_coverage: list[DocumentCoverage] = Field(default_factory=list)
     missing_documents: list[str] = Field(default_factory=list)
+    missing_evidence: list[MissingEvidence] = Field(default_factory=list)
+    extracted_metrics: list[ExtractedMetricSummary] = Field(default_factory=list)
     total_findings: int = 0
     total_errors: int = 0
     total_warnings: int = 0

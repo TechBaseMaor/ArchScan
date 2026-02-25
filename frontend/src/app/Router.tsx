@@ -9,6 +9,7 @@ import RulesetsPage from '../features/rulesets/RulesetsPage';
 import RulesetDetailPage from '../features/rulesets/RulesetDetailPage';
 import BenchmarksPage from '../features/benchmarks/BenchmarksPage';
 import BenchmarkDetailPage from '../features/benchmarks/BenchmarkDetailPage';
+import PilotAlonReportPage from '../features/reports/PilotAlonReportPage';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,8 @@ const router = createBrowserRouter([
       { path: '/rulesets/:rulesetId', element: <RulesetDetailPage /> },
       { path: '/benchmarks', element: <BenchmarksPage /> },
       { path: '/benchmarks/:benchmarkId', element: <BenchmarkDetailPage /> },
+      { path: '/reports/pilot-alon', element: <PilotAlonReportPage /> },
+      { path: '/reports/pilot-alon/:validationId', element: <PilotAlonReportPage /> },
     ],
   },
 ]);

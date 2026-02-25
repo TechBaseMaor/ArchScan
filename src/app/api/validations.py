@@ -17,6 +17,11 @@ from src.app.i18n import resolve_locale, t
 router = APIRouter()
 
 
+@router.get("", response_model=list[ValidationRun])
+async def list_validations():
+    return repo.list_all_validations()
+
+
 @router.post("", response_model=ValidationRun)
 async def start_validation(req: StartValidationRequest, request: Request):
     locale = resolve_locale(request)

@@ -185,6 +185,109 @@ class TestPilotRulesetEvaluation:
         assert len(parking_findings) >= 1
 
 
+class TestPilotComplianceReport:
+    """Verify compliance report for pilot bundle meets completeness criteria."""
+
+    def test_report_from_synthetic_submission(self, tmp_path):
+        from src.app.reporting.insights_service import build_compliance_report
+
+        sources = [
+            SourceFile(
+                file_name="plan.pdf",
+                source_format=SourceFormat.PDF,
+                source_hash="h1",
+                size_bytes=100,
+                stored_path="",
+                document_role=DocumentRole.SUBMISSION,
+                document_type="building_plan",
+            ),
+            SourceFile(
+                file_name="3729A.pdf",
+                source_format=SourceFormat.PDF,
+                source_hash="h2",
+                size_bytes=100,
+                stored_path="",
+                document_role=DocumentRole.REGULATION,
+                document_type="statutory_plan",
+            ),
+        ]
+        facts = [
+            ExtractedFact(
+                revision_id="rev1",
+                source_hash="h1",
+                fact_type=FactType.TEXTUAL,
+                category="area",
+                label="Gross area",
+                value=250.0,
+                unit="m²",
+            ),
+            ExtractedFact(
+                revision_id="rev1",
+                source_hash="h1",
+                fact_type=FactType.TEXTUAL,
+                category="height",
+                label="Floor height",
+                value=3.2,
+                unit="m",
+            ),
+            ExtractedFact(
+                revision_id="rev1",
+                source_hash="h1",
+                fact_type=FactType.TEXTUAL,
+                category="setback",
+                label="Front setback",
+                value=4.5,
+                unit="m",
+            ),
+        ]
+
+        ruleset = _load_pilot_ruleset()
+        findings = evaluate_ruleset(ruleset, facts, "p1", "rev1", "val1")
+
+        report = build_compliance_report(
+            validation_id="val1",
+            project_id="p1",
+            revision_id="rev1",
+            findings=findings,
+            ruleset=ruleset,
+            sources=sources,
+            facts=facts,
+        )
+
+        assert len(report.extracted_metrics) > 0
+        cats_present = {m.category for m in report.extracted_metrics if not m.is_missing}
+        assert "area" in cats_present
+        assert "height" in cats_present
+        assert "setback" in cats_present
+
+        missing_cats = {m.category for m in report.missing_evidence}
+        assert "parking" in missing_cats
+        assert "dwelling_units" in missing_cats
+
+        for m in report.extracted_metrics:
+            if m.is_missing:
+                assert m.value is None
+                assert m.missing_reason != ""
+
+        assert len(report.document_coverage) == 2
+
+    def test_report_with_all_categories_has_no_missing_evidence(self):
+        from src.app.reporting.insights_service import build_compliance_report
+
+        facts = [
+            ExtractedFact(revision_id="rev1", source_hash="h1", fact_type=FactType.TEXTUAL,
+                          category=cat, label=f"test {cat}", value=42, unit="x")
+            for cat in ("area", "height", "setback", "parking", "dwelling_units")
+        ]
+        report = build_compliance_report(
+            validation_id="val1", project_id="p1", revision_id="rev1",
+            findings=[], facts=facts,
+        )
+        assert len(report.missing_evidence) == 0
+        assert all(not m.is_missing for m in report.extracted_metrics
+                   if m.category in ("area", "height", "setback", "parking", "dwelling_units"))
+
+
 class TestPilotManifestEntries:
     """Verify pilot entries are properly registered in the manifest."""
 

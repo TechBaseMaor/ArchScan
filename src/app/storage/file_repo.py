@@ -170,6 +170,13 @@ def list_validations_for_project(project_id: str) -> list[ValidationRun]:
     return results
 
 
+def list_all_validations() -> list[ValidationRun]:
+    d = settings.data_dir / "validations"
+    if not d.exists():
+        return []
+    return [_load_model(f, ValidationRun) for f in sorted(d.glob("*.json"))]
+
+
 # ── Findings ───────────────────────────────────────────────────────────────
 
 def _findings_path(validation_id: str) -> Path:

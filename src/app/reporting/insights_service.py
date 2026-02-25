@@ -12,7 +12,9 @@ from src.app.domain.models import (
     ComplianceReport,
     DocumentCoverage,
     ExtractedFact,
+    ExtractedMetricSummary,
     Finding,
+    MissingEvidence,
     ReconciliationEntry,
     RevisionSummary,
     RuleSet,
@@ -201,6 +203,77 @@ _EXPECTED_DOC_TYPES = {
     "site_survey",
 }
 
+_EXPECTED_PILOT_CATEGORIES: dict[str, tuple[str, str, str]] = {
+    "area": ("Building areas (gross/net/service)", "m²", "area_calculation or building_plan"),
+    "height": ("Building and floor heights", "m", "building_plan or statutory_plan"),
+    "setback": ("Setbacks from lot boundaries", "m", "building_plan or site_survey"),
+    "parking": ("Parking space count", "spaces", "traffic_appendix or parking_guidelines"),
+    "dwelling_units": ("Dwelling unit count", "units", "building_plan or area_calculation"),
+}
+
+
+def _build_extracted_metrics(
+    facts: list[ExtractedFact],
+    sources: Optional[list[SourceFile]],
+) -> tuple[list[ExtractedMetricSummary], list[MissingEvidence]]:
+    """Build per-category metric summaries and explicit missing evidence entries."""
+    source_map: dict[str, SourceFile] = {}
+    if sources:
+        for src in sources:
+            source_map[src.source_hash] = src
+
+    facts_by_cat: dict[str, list[ExtractedFact]] = defaultdict(list)
+    for f in facts:
+        facts_by_cat[f.category].append(f)
+
+    metrics: list[ExtractedMetricSummary] = []
+    missing: list[MissingEvidence] = []
+
+    for cat, (label, unit, expected_src) in sorted(_EXPECTED_PILOT_CATEGORIES.items()):
+        cat_facts = facts_by_cat.get(cat, [])
+        if not cat_facts:
+            metrics.append(ExtractedMetricSummary(
+                category=cat,
+                label=label,
+                value=None,
+                unit=unit,
+                is_missing=True,
+                missing_reason=f"No {cat} data extracted from any source document.",
+            ))
+            missing.append(MissingEvidence(
+                category=cat,
+                expected_source=expected_src,
+                reason=f"No {cat} facts were extracted. Expected from: {expected_src}.",
+            ))
+        else:
+            for fact in cat_facts:
+                src = source_map.get(fact.source_hash)
+                metrics.append(ExtractedMetricSummary(
+                    category=cat,
+                    label=fact.label,
+                    value=fact.value,
+                    unit=fact.unit or unit,
+                    source_file=src.file_name if src else "",
+                    source_role=src.document_role.value if src and hasattr(src.document_role, "value") else "",
+                    confidence=fact.confidence,
+                ))
+
+    extra_cats = set(facts_by_cat.keys()) - set(_EXPECTED_PILOT_CATEGORIES.keys())
+    for cat in sorted(extra_cats):
+        for fact in facts_by_cat[cat]:
+            src = source_map.get(fact.source_hash)
+            metrics.append(ExtractedMetricSummary(
+                category=cat,
+                label=fact.label,
+                value=fact.value,
+                unit=fact.unit,
+                source_file=src.file_name if src else "",
+                source_role=src.document_role.value if src and hasattr(src.document_role, "value") else "",
+                confidence=fact.confidence,
+            ))
+
+    return metrics, missing
+
 
 def build_compliance_report(
     validation_id: str,
@@ -258,6 +331,11 @@ def build_compliance_report(
             if expected not in present_types:
                 missing_docs.append(expected)
 
+    extracted_metrics: list[ExtractedMetricSummary] = []
+    missing_evidence: list[MissingEvidence] = []
+    if facts is not None:
+        extracted_metrics, missing_evidence = _build_extracted_metrics(facts, sources)
+
     report = ComplianceReport(
         validation_id=validation_id,
         project_id=project_id,
@@ -265,6 +343,8 @@ def build_compliance_report(
         groups=groups,
         document_coverage=doc_coverage,
         missing_documents=missing_docs,
+        missing_evidence=missing_evidence,
+        extracted_metrics=extracted_metrics,
         total_findings=len(findings),
         total_errors=sum(1 for f in findings if f.severity == Severity.ERROR),
         total_warnings=sum(1 for f in findings if f.severity == Severity.WARNING),
@@ -272,7 +352,9 @@ def build_compliance_report(
     )
 
     logger.info(
-        "Compliance report: %d findings (%d errors, %d warnings) in %d groups",
-        report.total_findings, report.total_errors, report.total_warnings, len(groups),
+        "Compliance report: %d findings (%d errors, %d warnings) in %d groups, "
+        "%d metrics, %d missing evidence",
+        report.total_findings, report.total_errors, report.total_warnings,
+        len(groups), len(extracted_metrics), len(missing_evidence),
     )
     return report

@@ -215,6 +215,69 @@ async def test_demo_samples_list():
 
 
 @pytest.mark.asyncio
+async def test_compliance_report_endpoint():
+    """Integration test: compliance report includes extracted_metrics and missing_evidence."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post("/projects", json={"name": "Compliance Test"})
+        project_id = r.json()["project_id"]
+
+        r = await client.post("/rulesets", json={
+            "ruleset_id": "compliance-rs",
+            "name": "Compliance RS",
+            "version": "1.0.0",
+            "rules": [{
+                "rule_id": "C-AREA",
+                "version": "1.0",
+                "severity": "error",
+                "preconditions": [{"fact_category": "area", "operator": "exists"}],
+                "computation": {"formula": "area_max_check", "parameters": {"max_area": 500}},
+                "metadata": {"layer": "statutory"},
+            }],
+        })
+
+        pdf_content = b"%PDF-1.4 area: 150 m2"
+        files = [("files", ("plan.pdf", io.BytesIO(pdf_content), "application/pdf"))]
+        r = await client.post(f"/projects/{project_id}/revisions", files=files)
+        revision_id = r.json()["revision_id"]
+
+        r = await client.post("/validations", json={
+            "project_id": project_id,
+            "revision_id": revision_id,
+            "ruleset_id": "compliance-rs",
+        })
+        validation_id = r.json()["validation_id"]
+
+        r = await client.get(f"/validations/{validation_id}")
+        assert r.json()["status"] == "done"
+
+        r = await client.get(f"/validations/{validation_id}/compliance")
+        assert r.status_code == 200
+        report = r.json()
+
+        assert "extracted_metrics" in report
+        assert "missing_evidence" in report
+        assert "document_coverage" in report
+        assert "missing_documents" in report
+        assert isinstance(report["extracted_metrics"], list)
+        assert isinstance(report["missing_evidence"], list)
+
+        for m in report["extracted_metrics"]:
+            if m["is_missing"]:
+                assert m["value"] is None
+                assert m["missing_reason"] != ""
+
+
+@pytest.mark.asyncio
+async def test_list_validations_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.get("/validations")
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
+
+
+@pytest.mark.asyncio
 async def test_project_not_found():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:

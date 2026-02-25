@@ -248,6 +248,14 @@ def list_validations_for_project(project_id: str) -> list[ValidationRun]:
     return [ValidationRun.model_validate(r["data"]) for r in rows]
 
 
+def list_all_validations() -> list[ValidationRun]:
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT data FROM validations ORDER BY validation_id DESC",
+        ).fetchall()
+    return [ValidationRun.model_validate(r["data"]) for r in rows]
+
+
 # ── Findings ───────────────────────────────────────────────────────────────
 
 def save_findings(validation_id: str, findings: list[Finding]) -> None:

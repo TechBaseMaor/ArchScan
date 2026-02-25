@@ -1,5 +1,10 @@
 import api, { resolveBaseURL } from './client';
-import type { ValidationRun, Finding } from './types';
+import type { ValidationRun, Finding, ComplianceReport } from './types';
+
+export async function listValidations(): Promise<ValidationRun[]> {
+  const { data } = await api.get<ValidationRun[]>('/validations');
+  return data;
+}
 
 export async function startValidation(
   projectId: string,
@@ -21,6 +26,11 @@ export async function getValidation(id: string): Promise<ValidationRun> {
 
 export async function getFindings(validationId: string): Promise<Finding[]> {
   const { data } = await api.get<Finding[]>(`/validations/${validationId}/findings`);
+  return data;
+}
+
+export async function getComplianceReport(validationId: string): Promise<ComplianceReport> {
+  const { data } = await api.get<ComplianceReport>(`/validations/${validationId}/compliance`);
   return data;
 }
 

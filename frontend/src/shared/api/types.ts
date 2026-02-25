@@ -161,6 +161,59 @@ export interface RevisionSummary {
   sources_used: string[];
 }
 
+// ── Compliance Report ─────────────────────────────────────────────────────
+
+export interface ComplianceGroup {
+  layer: string;
+  discipline: string;
+  findings: Finding[];
+  pass_count: number;
+  fail_count: number;
+  warning_count: number;
+}
+
+export interface DocumentCoverage {
+  file_name: string;
+  document_role: string;
+  document_type: string;
+  facts_extracted: number;
+  rules_evaluated: number;
+}
+
+export interface MissingEvidence {
+  category: string;
+  expected_source: string;
+  reason: string;
+  severity: Severity;
+}
+
+export interface ExtractedMetricSummary {
+  category: string;
+  label: string;
+  value: unknown | null;
+  unit: string;
+  source_file: string;
+  source_role: string;
+  confidence: number;
+  is_missing: boolean;
+  missing_reason: string;
+}
+
+export interface ComplianceReport {
+  validation_id: string;
+  project_id: string;
+  revision_id: string;
+  groups: ComplianceGroup[];
+  document_coverage: DocumentCoverage[];
+  missing_documents: string[];
+  missing_evidence: MissingEvidence[];
+  extracted_metrics: ExtractedMetricSummary[];
+  total_findings: number;
+  total_errors: number;
+  total_warnings: number;
+  total_info: number;
+}
+
 // ── Demo / Sample Files ───────────────────────────────────────────────────
 
 export interface SampleFileInfo {
