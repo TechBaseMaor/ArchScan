@@ -1,4 +1,9 @@
-"""Async validation worker — picks jobs from an in-memory queue and executes them."""
+"""Async validation worker — picks jobs from an in-memory queue and executes them.
+
+Includes a review-gate check: if any regulation documents in the revision
+have pending officiality reviews, validation proceeds with a warning flag
+on the compliance report rather than blocking entirely.
+"""
 from __future__ import annotations
 
 import asyncio
@@ -6,7 +11,11 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from src.app.domain.models import ValidationStatus
+from src.app.domain.models import (
+    OfficialityStatus,
+    ReviewStatus,
+    ValidationStatus,
+)
 from src.app.storage import repo
 from src.app.engine.rule_engine import evaluate_ruleset
 from src.app.reporting.report_service import generate_pdf_report
@@ -70,13 +79,31 @@ class ValidationManager:
             await self._mark_failed(validation_id, f"RuleSet {run.ruleset_id} not found")
             return
 
+        has_pending = self._check_pending_reviews(run.project_id, run.revision_id)
+        if has_pending:
+            logger.warning(
+                "Validation %s proceeding with pending officiality reviews — "
+                "report will be flagged",
+                validation_id,
+            )
+
         facts = repo.load_facts(run.project_id, run.revision_id)
         if not facts:
             logger.warning("No facts for revision %s — validation will produce zero findings", run.revision_id)
 
+        verified_facts = [
+            f for f in facts
+            if f.metadata.get("officiality") != OfficialityStatus.UNVERIFIED.value
+        ]
+        unverified_count = len(facts) - len(verified_facts)
+        if unverified_count > 0:
+            logger.info(
+                "Excluded %d facts from unverified regulation docs", unverified_count,
+            )
+
         findings = evaluate_ruleset(
             ruleset=ruleset,
-            facts=facts,
+            facts=verified_facts,
             project_id=run.project_id,
             revision_id=run.revision_id,
             validation_id=validation_id,
@@ -94,9 +121,24 @@ class ValidationManager:
         run.completed_at = datetime.utcnow()
         run.findings_count = len(findings)
         repo.save_validation(run)
-        repo.log_audit_event("complete", "validation", validation_id, {"findings": len(findings)})
+        repo.log_audit_event(
+            "complete", "validation", validation_id,
+            {
+                "findings": len(findings),
+                "has_pending_reviews": has_pending,
+                "unverified_facts_excluded": unverified_count,
+            },
+        )
 
         logger.info("Validation %s completed with %d findings", validation_id, len(findings))
+
+    def _check_pending_reviews(self, project_id: str, revision_id: str) -> bool:
+        """Check if any review items are still pending for this revision."""
+        try:
+            items = repo.list_review_items(project_id=project_id, status="pending_review")
+            return any(item.revision_id == revision_id for item in items)
+        except Exception:
+            return False
 
     async def _mark_failed(self, validation_id: str, error: str):
         run = repo.get_validation(validation_id)

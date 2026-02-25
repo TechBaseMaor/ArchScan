@@ -15,13 +15,17 @@ from src.app.domain.models import (
     ExtractedMetricSummary,
     Finding,
     MissingEvidence,
+    OfficialityStatus,
     ReconciliationEntry,
+    ReviewStatus,
     RevisionSummary,
     RuleSet,
+    SectionComparison,
     Severity,
     SourceFile,
     SummaryMetric,
 )
+from src.app.engine.section_comparator import compare_sections
 
 logger = logging.getLogger(__name__)
 
@@ -317,11 +321,31 @@ def build_compliance_report(
     if sources:
         for src in sources:
             src_facts = [f for f in (facts or []) if f.source_hash == src.source_hash]
+            off_status = (
+                src.officiality_status.value
+                if hasattr(src, "officiality_status") and hasattr(src.officiality_status, "value")
+                else "pending"
+            )
+            off_conf = getattr(src, "officiality_confidence", 0.0)
+            read_grade = (
+                src.readability_grade.value
+                if hasattr(src, "readability_grade") and hasattr(src.readability_grade, "value")
+                else "high"
+            )
+            legal = (
+                src.legal_status.value
+                if hasattr(src, "legal_status") and hasattr(src.legal_status, "value")
+                else "unknown"
+            )
             doc_coverage.append(DocumentCoverage(
                 file_name=src.file_name,
                 document_role=src.document_role.value if hasattr(src.document_role, 'value') else str(src.document_role),
                 document_type=src.document_type,
                 facts_extracted=len(src_facts),
+                officiality_status=off_status,
+                officiality_confidence=off_conf,
+                readability_grade=read_grade,
+                legal_status=legal,
             ))
 
     missing_docs: list[str] = []
@@ -336,6 +360,22 @@ def build_compliance_report(
     if facts is not None:
         extracted_metrics, missing_evidence = _build_extracted_metrics(facts, sources)
 
+    section_comparisons: list[SectionComparison] = []
+    if facts is not None:
+        section_comparisons = compare_sections(facts, ruleset, sources)
+
+    has_pending = False
+    if sources:
+        has_pending = any(
+            getattr(s, "officiality_status", None) in (
+                OfficialityStatus.LIKELY_OFFICIAL,
+                OfficialityStatus.UNVERIFIED,
+                OfficialityStatus.PENDING,
+            )
+            for s in sources
+            if getattr(s, "document_role", None) and s.document_role.value == "regulation"
+        )
+
     report = ComplianceReport(
         validation_id=validation_id,
         project_id=project_id,
@@ -345,16 +385,19 @@ def build_compliance_report(
         missing_documents=missing_docs,
         missing_evidence=missing_evidence,
         extracted_metrics=extracted_metrics,
+        section_comparisons=section_comparisons,
         total_findings=len(findings),
         total_errors=sum(1 for f in findings if f.severity == Severity.ERROR),
         total_warnings=sum(1 for f in findings if f.severity == Severity.WARNING),
         total_info=sum(1 for f in findings if f.severity == Severity.INFO),
+        has_pending_reviews=has_pending,
     )
 
     logger.info(
         "Compliance report: %d findings (%d errors, %d warnings) in %d groups, "
-        "%d metrics, %d missing evidence",
+        "%d metrics, %d missing evidence, %d section comparisons",
         report.total_findings, report.total_errors, report.total_warnings,
         len(groups), len(extracted_metrics), len(missing_evidence),
+        len(section_comparisons),
     )
     return report

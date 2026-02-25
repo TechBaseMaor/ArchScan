@@ -18,6 +18,7 @@ from src.app.domain.models import (
     ExtractedFact,
     Finding,
     Project,
+    ReviewItem,
     Revision,
     RuleSet,
     ValidationRun,
@@ -107,10 +108,19 @@ CREATE TABLE IF NOT EXISTS audit_events (
     data JSONB NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS review_items (
+    review_id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending_review',
+    data JSONB NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_revisions_project_id ON revisions (project_id);
 CREATE INDEX IF NOT EXISTS idx_validations_project_id ON validations (project_id);
 CREATE INDEX IF NOT EXISTS idx_facts_project_revision ON facts (project_id, revision_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_date ON audit_events (created_date);
+CREATE INDEX IF NOT EXISTS idx_review_items_project_id ON review_items (project_id);
+CREATE INDEX IF NOT EXISTS idx_review_items_status ON review_items (status);
 """
 
 
@@ -320,6 +330,51 @@ def list_rulesets() -> list[RuleSet]:
             "FROM rulesets ORDER BY ruleset_id, version DESC"
         ).fetchall()
     return [RuleSet.model_validate(r["data"]) for r in rows]
+
+
+# ── Review Items ──────────────────────────────────────────────────────────
+
+def save_review_item(item: ReviewItem) -> None:
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO review_items (review_id, project_id, status, data) VALUES (%s, %s, %s, %s) "
+            "ON CONFLICT (review_id) DO UPDATE SET status = EXCLUDED.status, data = EXCLUDED.data",
+            (item.review_id, item.project_id, item.status.value, _dump(item)),
+        )
+        conn.commit()
+
+
+def get_review_item(review_id: str) -> ReviewItem | None:
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT data FROM review_items WHERE review_id = %s",
+            (review_id,),
+        ).fetchone()
+    if not row:
+        return None
+    return ReviewItem.model_validate(row["data"])
+
+
+def list_review_items(
+    project_id: str | None = None,
+    status: str | None = None,
+) -> list[ReviewItem]:
+    clauses = []
+    params: list = []
+    if project_id:
+        clauses.append("project_id = %s")
+        params.append(project_id)
+    if status:
+        clauses.append("status = %s")
+        params.append(status)
+    where = " AND ".join(clauses)
+    sql = "SELECT data FROM review_items"
+    if where:
+        sql += f" WHERE {where}"
+    sql += " ORDER BY review_id"
+    with _conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [ReviewItem.model_validate(r["data"]) for r in rows]
 
 
 # ── Audit trail ────────────────────────────────────────────────────────────

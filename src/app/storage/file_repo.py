@@ -15,6 +15,7 @@ from src.app.domain.models import (
     ExtractedFact,
     Finding,
     Project,
+    ReviewItem,
     Revision,
     RuleSet,
     ValidationRun,
@@ -236,6 +237,41 @@ def list_rulesets() -> list[RuleSet]:
             if versions:
                 results.append(_load_model(versions[-1], RuleSet))
     return results
+
+
+# ── Review Items ──────────────────────────────────────────────────────────
+
+def _reviews_dir() -> Path:
+    return settings.data_dir / "reviews"
+
+
+def save_review_item(item: ReviewItem) -> None:
+    d = _reviews_dir()
+    d.mkdir(parents=True, exist_ok=True)
+    _write_json(d / f"{item.review_id}.json", item.model_dump())
+
+
+def get_review_item(review_id: str) -> ReviewItem | None:
+    p = _reviews_dir() / f"{review_id}.json"
+    return _load_model(p, ReviewItem) if p.exists() else None
+
+
+def list_review_items(
+    project_id: str | None = None,
+    status: str | None = None,
+) -> list[ReviewItem]:
+    d = _reviews_dir()
+    if not d.exists():
+        return []
+    items: list[ReviewItem] = []
+    for f in sorted(d.glob("*.json")):
+        item = _load_model(f, ReviewItem)
+        if project_id and item.project_id != project_id:
+            continue
+        if status and item.status.value != status:
+            continue
+        items.append(item)
+    return items
 
 
 # ── Audit trail (append-only JSONL) ───────────────────────────────────────

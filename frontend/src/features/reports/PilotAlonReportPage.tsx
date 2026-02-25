@@ -29,6 +29,7 @@ import type {
   MissingEvidence,
   ExtractedMetricSummary,
   Finding,
+  SectionComparison,
 } from '../../shared/api/types';
 
 const CATEGORY_ICONS: Record<string, typeof Ruler> = {
@@ -223,10 +224,34 @@ function ComplianceReportView({
         </button>
       </div>
 
+      {report.has_pending_reviews && (
+        <div
+          style={{
+            background: 'var(--color-warning)15',
+            border: '1px solid var(--color-warning)',
+            borderRadius: 'var(--radius)',
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 16,
+            fontSize: 13,
+          }}
+        >
+          <AlertTriangle size={16} color="var(--color-warning)" />
+          {t('pilotAlon.pendingReviewsBanner')}
+        </div>
+      )}
+
       {/* Summary counters */}
       <SummaryCards report={report} t={t} />
 
       <div style={{ display: 'grid', gap: 20, marginTop: 20 }}>
+        {/* Section comparisons */}
+        {report.section_comparisons && report.section_comparisons.length > 0 && (
+          <SectionComparisonsTable comparisons={report.section_comparisons} t={t} />
+        )}
+
         {/* Extracted metrics */}
         <MetricsSection metrics={report.extracted_metrics} t={t} />
 
@@ -581,6 +606,9 @@ function ComplianceGroupsSection({
                         <th>{t('pilotAlon.severity')}</th>
                         <th>{t('pilotAlon.rule')}</th>
                         <th>{t('pilotAlon.message')}</th>
+                        <th>{t('pilotAlon.expectedValue')}</th>
+                        <th>{t('pilotAlon.observedValue')}</th>
+                        <th>{t('pilotAlon.deviation')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -589,8 +617,33 @@ function ComplianceGroupsSection({
                           <td><StatusBadge status={f.severity} /></td>
                           <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                             {f.rule_ref}
+                            {f.regulation_basis && (
+                              <div style={{ fontSize: 10, color: 'var(--color-text-dim)' }}>
+                                {f.regulation_basis}
+                              </div>
+                            )}
                           </td>
-                          <td style={{ fontSize: 13 }}>{f.message}</td>
+                          <td style={{ fontSize: 13 }}>
+                            {f.message}
+                            {f.explanation && (
+                              <div style={{ fontSize: 11, color: 'var(--color-text-dim)', marginTop: 2 }}>
+                                {f.explanation}
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                            {f.expected_value != null ? String(f.expected_value) : '\u2014'}
+                          </td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                            {f.observed_value != null ? String(f.observed_value) : '\u2014'}
+                          </td>
+                          <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                            {f.deviation != null ? (
+                              <span style={{ color: f.deviation !== 0 ? 'var(--color-error)' : undefined }}>
+                                {f.deviation > 0 ? '+' : ''}{f.deviation.toFixed(2)}
+                              </span>
+                            ) : '\u2014'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -602,6 +655,180 @@ function ComplianceGroupsSection({
         })}
       </div>
     </div>
+  );
+}
+
+function SectionComparisonsTable({
+  comparisons,
+  t,
+}: {
+  comparisons: SectionComparison[];
+  t: (key: string, params?: Record<string, string>) => string;
+}) {
+  const [expanded, setExpanded] = useState(true);
+
+  const statusColor = (s: string) => {
+    switch (s) {
+      case 'pass': return 'var(--color-success)';
+      case 'fail': return 'var(--color-error)';
+      case 'warn': return 'var(--color-warning)';
+      case 'missing': return 'var(--color-error)';
+      case 'manual_review': return 'var(--color-info)';
+      default: return 'var(--color-text-dim)';
+    }
+  };
+
+  const statusLabel = (s: string) => {
+    switch (s) {
+      case 'pass': return t('pilotAlon.pass');
+      case 'fail': return t('pilotAlon.fail');
+      case 'warn': return t('pilotAlon.warn');
+      case 'missing': return t('pilotAlon.missing');
+      case 'manual_review': return t('pilotAlon.manualReview');
+      default: return s;
+    }
+  };
+
+  return (
+    <div className="card">
+      <h3
+        style={{
+          fontSize: 15,
+          fontWeight: 600,
+          marginBottom: expanded ? 16 : 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <Search size={18} /> {t('pilotAlon.sectionComparisons')} ({comparisons.length})
+        <span style={{ marginInlineStart: 'auto' }}>
+          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </span>
+      </h3>
+      {expanded && (
+        <div className="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>{t('pilotAlon.section')}</th>
+                <th>{t('pilotAlon.category')}</th>
+                <th>{t('pilotAlon.regulationValue')}</th>
+                <th>{t('pilotAlon.submissionValue')}</th>
+                <th>{t('pilotAlon.deviation')}</th>
+                <th>{t('pilotAlon.status')}</th>
+                <th>{t('pilotAlon.explanation')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparisons.map((c, idx) => (
+                <tr key={idx}>
+                  <td style={{ fontSize: 12, fontWeight: 600 }}>
+                    <div>{c.section_id}</div>
+                    <div style={{ fontWeight: 400, color: 'var(--color-text-dim)', fontSize: 11 }}>
+                      {c.section_title}
+                    </div>
+                  </td>
+                  <td style={{ fontSize: 12 }}>
+                    {CATEGORY_LABELS_HE[c.category] || c.category}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    {c.regulation_value != null ? String(c.regulation_value) : '\u2014'}
+                    {c.unit && <span style={{ color: 'var(--color-text-dim)', marginInlineStart: 4 }}>{c.unit}</span>}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    {c.submission_value != null ? String(c.submission_value) : '\u2014'}
+                    {c.unit && <span style={{ color: 'var(--color-text-dim)', marginInlineStart: 4 }}>{c.unit}</span>}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    {c.deviation != null ? (
+                      <span style={{ color: Math.abs(c.deviation) > 0 ? statusColor(c.status) : undefined }}>
+                        {c.deviation > 0 ? '+' : ''}{c.deviation.toFixed(2)}
+                      </span>
+                    ) : '\u2014'}
+                  </td>
+                  <td>
+                    <span
+                      className="badge"
+                      style={{
+                        background: `${statusColor(c.status)}20`,
+                        color: statusColor(c.status),
+                        fontSize: 11,
+                        border: `1px solid ${statusColor(c.status)}40`,
+                      }}
+                    >
+                      {statusLabel(c.status)}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: 11, color: 'var(--color-text-dim)', maxWidth: 250 }}>
+                    {c.explanation}
+                    {c.evidence_links && c.evidence_links.length > 0 && (
+                      <div style={{ marginTop: 4, fontSize: 10, color: 'var(--color-primary)' }}>
+                        {c.evidence_links.join(' | ')}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OfficialityBadge({
+  status,
+  confidence,
+  t,
+}: {
+  status: string;
+  confidence: number;
+  t: (key: string) => string;
+}) {
+  const pct = Math.round(confidence * 100);
+  let color: string;
+  let label: string;
+
+  switch (status) {
+    case 'verified_official':
+      color = 'var(--color-success)';
+      label = t('pilotAlon.verified');
+      break;
+    case 'likely_official':
+      color = 'var(--color-warning)';
+      label = t('pilotAlon.likelyOfficial');
+      break;
+    case 'unverified':
+      color = 'var(--color-error)';
+      label = t('pilotAlon.unverified');
+      break;
+    case 'pending':
+      color = 'var(--color-text-dim)';
+      label = t('pilotAlon.pendingReview');
+      break;
+    default:
+      color = 'var(--color-text-dim)';
+      label = status;
+  }
+
+  return (
+    <span
+      className="badge"
+      style={{
+        background: `${color}20`,
+        color,
+        fontSize: 10,
+        border: `1px solid ${color}40`,
+      }}
+      title={`${pct}% confidence`}
+    >
+      {label} ({pct}%)
+    </span>
   );
 }
 
@@ -633,6 +860,8 @@ function CoverageSection({
               <th>{t('pilotAlon.fileName')}</th>
               <th>{t('pilotAlon.role')}</th>
               <th>{t('pilotAlon.type')}</th>
+              <th>{t('pilotAlon.officialityStatus')}</th>
+              <th>{t('pilotAlon.legalStatus')}</th>
               <th>{t('pilotAlon.factsExtracted')}</th>
             </tr>
           </thead>
@@ -648,6 +877,16 @@ function CoverageSection({
                   </span>
                 </td>
                 <td style={{ fontSize: 12 }}>{doc.document_type || '\u2014'}</td>
+                <td>
+                  <OfficialityBadge
+                    status={doc.officiality_status}
+                    confidence={doc.officiality_confidence}
+                    t={t}
+                  />
+                </td>
+                <td style={{ fontSize: 11 }}>
+                  {doc.legal_status !== 'unknown' ? doc.legal_status : '\u2014'}
+                </td>
                 <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   {doc.facts_extracted}
                 </td>

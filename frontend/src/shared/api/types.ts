@@ -64,6 +64,12 @@ export interface Finding {
   revision_id: string;
   source_hashes: string[];
   created_at: string;
+  section_ref: string;
+  regulation_basis: string;
+  expected_value: unknown | null;
+  observed_value: unknown | null;
+  deviation: number | null;
+  explanation: string;
 }
 
 export interface RulePrecondition {
@@ -178,6 +184,10 @@ export interface DocumentCoverage {
   document_type: string;
   facts_extracted: number;
   rules_evaluated: number;
+  officiality_status: string;
+  officiality_confidence: number;
+  readability_grade: string;
+  legal_status: string;
 }
 
 export interface MissingEvidence {
@@ -185,6 +195,9 @@ export interface MissingEvidence {
   expected_source: string;
   reason: string;
   severity: Severity;
+  section_ref: string;
+  regulation_section: string;
+  manual_intervention_required: boolean;
 }
 
 export interface ExtractedMetricSummary {
@@ -199,6 +212,50 @@ export interface ExtractedMetricSummary {
   missing_reason: string;
 }
 
+export interface SectionComparison {
+  section_id: string;
+  section_title: string;
+  category: string;
+  regulation_source: string;
+  regulation_section_ref: string;
+  regulation_value: unknown | null;
+  regulation_text: string;
+  submission_source: string;
+  submission_value: unknown | null;
+  unit: string;
+  status: string;
+  deviation: number | null;
+  explanation: string;
+  legal_status: string;
+  evidence_links: string[];
+}
+
+export type ReviewStatusType = 'pending_review' | 'approved' | 'rejected' | 'auto_approved';
+
+export interface ReviewItem {
+  review_id: string;
+  project_id: string;
+  revision_id: string;
+  file_name: string;
+  source_hash: string;
+  review_type: string;
+  reason: string;
+  confidence: number;
+  status: ReviewStatusType;
+  reviewer: string;
+  decision_notes: string;
+  created_at: string;
+  resolved_at: string | null;
+  context: Record<string, unknown>;
+}
+
+export interface ReviewCounts {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
 export interface ComplianceReport {
   validation_id: string;
   project_id: string;
@@ -208,10 +265,12 @@ export interface ComplianceReport {
   missing_documents: string[];
   missing_evidence: MissingEvidence[];
   extracted_metrics: ExtractedMetricSummary[];
+  section_comparisons: SectionComparison[];
   total_findings: number;
   total_errors: number;
   total_warnings: number;
   total_info: number;
+  has_pending_reviews: boolean;
 }
 
 // ── Demo / Sample Files ───────────────────────────────────────────────────

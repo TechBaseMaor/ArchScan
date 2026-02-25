@@ -1,5 +1,5 @@
 import api, { resolveBaseURL } from './client';
-import type { ValidationRun, Finding, ComplianceReport } from './types';
+import type { ValidationRun, Finding, ComplianceReport, ReviewItem, ReviewCounts } from './types';
 
 export async function listValidations(): Promise<ValidationRun[]> {
   const { data } = await api.get<ValidationRun[]>('/validations');
@@ -37,4 +37,41 @@ export async function getComplianceReport(validationId: string): Promise<Complia
 export function getReportUrl(validationId: string): string {
   const base = resolveBaseURL();
   return `${base}/validations/${validationId}/report`;
+}
+
+export async function listReviewItems(
+  projectId?: string,
+  status?: string,
+): Promise<ReviewItem[]> {
+  const params = new URLSearchParams();
+  if (projectId) params.set('project_id', projectId);
+  if (status) params.set('status', status);
+  const query = params.toString();
+  const { data } = await api.get<ReviewItem[]>(`/reviews${query ? `?${query}` : ''}`);
+  return data;
+}
+
+export async function getReviewItem(reviewId: string): Promise<ReviewItem> {
+  const { data } = await api.get<ReviewItem>(`/reviews/${reviewId}`);
+  return data;
+}
+
+export async function decideReview(
+  reviewId: string,
+  decision: 'approved' | 'rejected',
+  reviewer: string = '',
+  notes: string = '',
+): Promise<ReviewItem> {
+  const { data } = await api.post<ReviewItem>(`/reviews/${reviewId}/decide`, {
+    decision,
+    reviewer,
+    notes,
+  });
+  return data;
+}
+
+export async function getReviewCounts(projectId?: string): Promise<ReviewCounts> {
+  const params = projectId ? `?project_id=${projectId}` : '';
+  const { data } = await api.get<ReviewCounts>(`/reviews/summary/counts${params}`);
+  return data;
 }

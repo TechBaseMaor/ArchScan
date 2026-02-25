@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { FolderKanban, ShieldCheck, BookOpen, BarChart3, Sun, Moon, Languages, Menu, X, ClipboardList } from 'lucide-react';
+import { FolderKanban, ShieldCheck, BookOpen, BarChart3, Sun, Moon, Languages, Menu, X, ClipboardList, ShieldAlert } from 'lucide-react';
 import { useI18n } from '../shared/i18n';
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/rulesets', labelKey: 'nav.rulesets', icon: BookOpen },
   { to: '/benchmarks', labelKey: 'nav.benchmarks', icon: BarChart3 },
   { to: '/reports/pilot-alon', labelKey: 'nav.pilotAlon', icon: ClipboardList },
+  { to: '/reviews', labelKey: 'nav.reviews', icon: ShieldAlert },
 ] as const;
 
 function useTheme() {

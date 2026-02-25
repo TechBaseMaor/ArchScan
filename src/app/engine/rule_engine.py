@@ -352,6 +352,19 @@ def _make_finding(
     result: Any,
     tolerance: dict,
 ) -> Finding:
+    expected = inputs.get("max_allowed") or inputs.get("min_required") or inputs.get("regulation_value")
+    observed = inputs.get("measured") or inputs.get("submission_value") or inputs.get("detected")
+    deviation = float(result) if isinstance(result, (int, float)) else None
+
+    section_ref = rule.metadata.get("section_ref", "")
+    regulation_basis = rule.metadata.get("source_doc", "")
+
+    explanation = ""
+    if expected is not None and observed is not None:
+        explanation = f"Expected: {expected}, Observed: {observed}"
+        if deviation is not None:
+            explanation += f", Deviation: {deviation:+.2f}"
+
     return Finding(
         validation_id=validation_id,
         rule_ref=f"{rule.rule_id}:{rule.version}",
@@ -367,4 +380,10 @@ def _make_finding(
         project_id=project_id,
         revision_id=revision_id,
         source_hashes=list({f.source_hash for f in used_facts}),
+        section_ref=section_ref,
+        regulation_basis=regulation_basis,
+        expected_value=expected,
+        observed_value=observed,
+        deviation=deviation,
+        explanation=explanation,
     )

@@ -49,6 +49,35 @@ class DocumentRole(str, Enum):
     UNKNOWN = "unknown"
 
 
+class OfficialityStatus(str, Enum):
+    PENDING = "pending"
+    VERIFIED_OFFICIAL = "verified_official"
+    LIKELY_OFFICIAL = "likely_official"
+    UNVERIFIED = "unverified"
+    REJECTED = "rejected"
+
+
+class ReviewStatus(str, Enum):
+    AUTO_APPROVED = "auto_approved"
+    PENDING_REVIEW = "pending_review"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class ReadabilityGrade(str, Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    UNREADABLE = "unreadable"
+
+
+class LegalStatus(str, Enum):
+    SPATIAL_DIRECTIVE = "הנחיה מרחבית"
+    POLICY = "מדיניות"
+    STATUTORY = "statutory"
+    UNKNOWN = "unknown"
+
+
 class SourceFormat(str, Enum):
     IFC = "ifc"
     PDF = "pdf"
@@ -88,6 +117,11 @@ class SourceFile(BaseModel):
     stored_path: str
     document_role: DocumentRole = DocumentRole.UNKNOWN
     document_type: str = ""
+    officiality_status: OfficialityStatus = OfficialityStatus.PENDING
+    officiality_confidence: float = 0.0
+    officiality_signals: Dict[str, Any] = Field(default_factory=dict)
+    readability_grade: ReadabilityGrade = ReadabilityGrade.HIGH
+    legal_status: LegalStatus = LegalStatus.UNKNOWN
 
 
 class Revision(BaseModel):
@@ -241,6 +275,12 @@ class Finding(BaseModel):
     revision_id: str
     source_hashes: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_now)
+    section_ref: str = ""
+    regulation_basis: str = ""
+    expected_value: Optional[Any] = None
+    observed_value: Optional[Any] = None
+    deviation: Optional[float] = None
+    explanation: str = ""
 
 
 # ── Grouped Compliance Report ─────────────────────────────────────────────
@@ -262,6 +302,10 @@ class DocumentCoverage(BaseModel):
     document_type: str
     facts_extracted: int = 0
     rules_evaluated: int = 0
+    officiality_status: str = "pending"
+    officiality_confidence: float = 0.0
+    readability_grade: str = "high"
+    legal_status: str = "unknown"
 
 
 class MissingEvidence(BaseModel):
@@ -270,6 +314,9 @@ class MissingEvidence(BaseModel):
     expected_source: str
     reason: str
     severity: Severity = Severity.WARNING
+    section_ref: str = ""
+    regulation_section: str = ""
+    manual_intervention_required: bool = False
 
 
 class ExtractedMetricSummary(BaseModel):
@@ -285,6 +332,25 @@ class ExtractedMetricSummary(BaseModel):
     missing_reason: str = ""
 
 
+class SectionComparison(BaseModel):
+    """Requirement-vs-submission comparison for a single section/parameter."""
+    section_id: str = ""
+    section_title: str = ""
+    category: str = ""
+    regulation_source: str = ""
+    regulation_section_ref: str = ""
+    regulation_value: Optional[Any] = None
+    regulation_text: str = ""
+    submission_source: str = ""
+    submission_value: Optional[Any] = None
+    unit: str = ""
+    status: str = "pending"  # pass / fail / warn / missing / manual_review
+    deviation: Optional[float] = None
+    explanation: str = ""
+    legal_status: str = "unknown"
+    evidence_links: List[str] = Field(default_factory=list)
+
+
 class ComplianceReport(BaseModel):
     """Bundle-level compliance report with grouped findings."""
     validation_id: str
@@ -295,10 +361,12 @@ class ComplianceReport(BaseModel):
     missing_documents: list[str] = Field(default_factory=list)
     missing_evidence: list[MissingEvidence] = Field(default_factory=list)
     extracted_metrics: list[ExtractedMetricSummary] = Field(default_factory=list)
+    section_comparisons: list[SectionComparison] = Field(default_factory=list)
     total_findings: int = 0
     total_errors: int = 0
     total_warnings: int = 0
     total_info: int = 0
+    has_pending_reviews: bool = False
 
 
 # ── Audit ──────────────────────────────────────────────────────────────────
@@ -313,6 +381,26 @@ class AuditEvent(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+# ── Manual Review Queue ───────────────────────────────────────────────────
+
+class ReviewItem(BaseModel):
+    """A document or finding flagged for manual review."""
+    review_id: str = Field(default_factory=_new_id)
+    project_id: str
+    revision_id: str
+    file_name: str = ""
+    source_hash: str = ""
+    review_type: str = ""  # "officiality" | "contradiction" | "missing_data"
+    reason: str = ""
+    confidence: float = 0.0
+    status: ReviewStatus = ReviewStatus.PENDING_REVIEW
+    reviewer: str = ""
+    decision_notes: str = ""
+    created_at: datetime = Field(default_factory=_now)
+    resolved_at: Optional[datetime] = None
+    context: Dict[str, Any] = Field(default_factory=dict)
+
+
 # ── API request / response helpers ────────────────────────────────────────
 
 class CreateProjectRequest(BaseModel):
@@ -324,6 +412,12 @@ class StartValidationRequest(BaseModel):
     project_id: str
     revision_id: str
     ruleset_id: str
+
+
+class ReviewDecisionRequest(BaseModel):
+    decision: str  # "approved" | "rejected"
+    reviewer: str = "anonymous"
+    notes: str = ""
 
 
 class ProjectHistoryEntry(BaseModel):

@@ -25,6 +25,7 @@ def setup_env(tmp_path):
         settings.data_dir / "findings",
         settings.data_dir / "reports",
         settings.data_dir / "audit",
+        settings.data_dir / "reviews",
         settings.upload_dir,
         settings.rulesets_dir,
     ]:
@@ -283,3 +284,103 @@ async def test_project_not_found():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         r = await client.get("/projects/nonexistent")
         assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_review_queue_api():
+    """Integration test: review queue list, decide, and counts endpoints."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # List reviews (initially empty)
+        r = await client.get("/reviews")
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
+
+        # Counts endpoint
+        r = await client.get("/reviews/summary/counts")
+        assert r.status_code == 200
+        counts = r.json()
+        assert "total" in counts
+        assert "pending" in counts
+
+        # Create a project and upload a file named ambiguously to trigger review
+        r = await client.post("/projects", json={"name": "Review Test"})
+        project_id = r.json()["project_id"]
+
+        pdf_content = b"%PDF-1.4 area: 50 m2"
+        files = [("files", ("unknown_doc.pdf", io.BytesIO(pdf_content), "application/pdf"))]
+        r = await client.post(
+            f"/projects/{project_id}/revisions",
+            files=files,
+            data={"metadata": json.dumps({})},
+        )
+        assert r.status_code == 200
+
+        # Check if any review items were created
+        r = await client.get("/reviews")
+        assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_compliance_report_has_section_comparisons():
+    """Integration test: compliance report includes section_comparisons and has_pending_reviews."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post("/projects", json={"name": "Section Comp Test"})
+        project_id = r.json()["project_id"]
+
+        r = await client.post("/rulesets", json={
+            "ruleset_id": "sect-rs",
+            "name": "Section RS",
+            "version": "1.0.0",
+            "rules": [{
+                "rule_id": "S-AREA",
+                "version": "1.0",
+                "severity": "error",
+                "preconditions": [{"fact_category": "area", "operator": "exists"}],
+                "computation": {"formula": "area_max_check", "parameters": {"max_area": 500}},
+                "metadata": {"layer": "statutory"},
+            }],
+        })
+        assert r.status_code == 200
+
+        pdf_content = b"%PDF-1.4 area: 150 m2"
+        files = [("files", ("plan.pdf", io.BytesIO(pdf_content), "application/pdf"))]
+        r = await client.post(f"/projects/{project_id}/revisions", files=files)
+        revision_id = r.json()["revision_id"]
+
+        r = await client.post("/validations", json={
+            "project_id": project_id,
+            "revision_id": revision_id,
+            "ruleset_id": "sect-rs",
+        })
+        validation_id = r.json()["validation_id"]
+
+        r = await client.get(f"/validations/{validation_id}")
+        assert r.json()["status"] == "done"
+
+        r = await client.get(f"/validations/{validation_id}/compliance")
+        assert r.status_code == 200
+        report = r.json()
+
+        assert "section_comparisons" in report
+        assert isinstance(report["section_comparisons"], list)
+        assert "has_pending_reviews" in report
+        assert isinstance(report["has_pending_reviews"], bool)
+
+        # Document coverage should have officiality fields
+        for doc in report.get("document_coverage", []):
+            assert "officiality_status" in doc
+            assert "officiality_confidence" in doc
+            assert "readability_grade" in doc
+            assert "legal_status" in doc
+
+        # Findings should have new evidence fields
+        for group in report.get("groups", []):
+            for finding in group.get("findings", []):
+                assert "section_ref" in finding
+                assert "regulation_basis" in finding
+                assert "expected_value" in finding
+                assert "observed_value" in finding
+                assert "deviation" in finding
+                assert "explanation" in finding
