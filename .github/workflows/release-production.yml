@@ -152,7 +152,7 @@ jobs:
             -H "Access-Control-Request-Method: GET" \
             "$API_BASE/health" | grep -i "access-control-allow-origin" | tr -d '\r')
           echo "CORS header: $ACAO"
-          echo "$ACAO" | grep -qi "archscan-planandgo.netlify.app" \
+          echo "$ACAO" | grep -qi "$FRONTEND_URL" \
             && echo "CORS OK" \
             || { echo "::error::CORS does not allow frontend origin"; exit 1; }
 
@@ -235,7 +235,9 @@ jobs:
           echo "| Smoke Tests | ${{ needs.smoke-tests.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "${{ needs.smoke-tests.result }}" = "success" ]; then
+          if [ "${{ needs.preflight.result }}" = "success" ] \
+            && [ "${{ needs.deploy-verify.result }}" = "success" ] \
+            && [ "${{ needs.smoke-tests.result }}" = "success" ]; then
             echo "### Release HEALTHY" >> "$GITHUB_STEP_SUMMARY"
             echo "Release is healthy"
           else

@@ -20,18 +20,15 @@
 # ── Deploy-context overrides ─────────────────────────────────────────────
 
 # Production: strict build, security headers
+# NOTE: NODE_ENV is NOT set here — npm ci must install devDependencies
+# (typescript, vite, etc.) for the build to succeed. Vite already builds
+# in production mode by default.
 [context.production]
   command = "npm ci --prefer-offline && npm run build"
 
-[context.production.environment]
-  NODE_ENV = "production"
-
-# Deploy previews (PRs): same build, but allowed to warn instead of fail
+# Deploy previews (PRs): same build
 [context.deploy-preview]
   command = "npm ci --prefer-offline && npm run build"
-
-[context.deploy-preview.environment]
-  NODE_ENV = "production"
 
 # Branch deploys: disabled (only main goes to production)
 [context.branch-deploy]
