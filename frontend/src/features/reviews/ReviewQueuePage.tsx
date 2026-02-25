@@ -46,7 +46,7 @@ export default function ReviewQueuePage() {
     filter === 'pending'
       ? allItems.filter((i) => i.status === 'pending_review')
       : filter === 'resolved'
-        ? allItems.filter((i) => i.status === 'approved' || i.status === 'rejected')
+        ? allItems.filter((i) => i.status === 'approved' || i.status === 'rejected' || i.status === 'auto_approved')
         : allItems;
 
   const pendingCount = allItems.filter((i) => i.status === 'pending_review').length;
