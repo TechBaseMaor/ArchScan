@@ -128,9 +128,33 @@ The system runs on **Render** (backend) + **Netlify** (frontend) + **Neon** (Pos
 ```
 git push origin main
   ├── Render: builds & deploys backend (auto-deploy from main)
-  ├── Netlify: builds & deploys frontend (auto-deploy from main)
-  └── GitHub Actions: runs benchmark gate + smoke tests
+  ├── Netlify: builds & deploys frontend (npm ci, lockfile-driven)
+  └── GitHub Actions:
+       ├── Benchmark KPI Gate (tests + benchmarks)
+       └── Production Release (preflight → deploy verify → smoke tests → fallback)
 ```
+
+### Canonical release path
+
+The **Production Release** workflow (`.github/workflows/release-production.yml`) is the
+single source of truth for release health. Every push to `main` triggers it automatically.
+
+**To release:**
+
+```bash
+git push origin main
+# Watch: GitHub → Actions → "Production Release"
+# Status: preflight → deploy-verify → smoke-tests → release-status
+```
+
+**To force a Netlify redeploy (incident recovery):**
+
+```bash
+# Go to GitHub → Actions → "Production Release" → Run workflow
+# Check "Force Netlify redeploy" → Run
+```
+
+This triggers a CLI-based deploy that bypasses Netlify's auto-deploy pipeline entirely.
 
 ### Environment variables
 
@@ -182,6 +206,69 @@ curl https://archscan.onrender.com/health
 | Frontend shows blank / localhost errors | `VITE_API_BASE_URL` not set in Netlify | Add env var in Netlify → Environment variables, re-deploy |
 | `channel_binding` error | Neon URL incompatibility | Already handled in code (`config.py`) |
 | Deploy not triggered | Auto-deploy off | Check Render Settings → Build & Deploy → Auto-Deploy = Yes |
+| Netlify deploy canceled | Concurrent builds or platform issue | Trigger manual redeploy via GitHub Actions |
+| Backend 502/timeout after deploy | Render cold start (free tier) | Wait 2-3 min, or check Production Release workflow for auto-retry |
+| Smoke tests fail but site looks fine | Transient network / cold start | Re-run Production Release via workflow_dispatch |
+
+### Emergency redeploy procedure
+
+If production is down and auto-deploy is not recovering:
+
+1. **Frontend (Netlify):**
+   - Go to GitHub → Actions → "Production Release" → Run workflow
+   - Check "Force Netlify redeploy" → Run
+   - This builds from the current `main` and deploys via `netlify-cli`, bypassing auto-deploy
+
+2. **Backend (Render):**
+   - Go to Render Dashboard → archscan → Manual Deploy → Deploy latest commit
+   - Or: push an empty commit: `git commit --allow-empty -m "redeploy" && git push`
+
+3. **Verify recovery:**
+   ```bash
+   curl https://archscan.onrender.com/health
+   curl -s https://archscan-planandgo.netlify.app | grep ArchScan
+   ```
+
+### Rollback checklist
+
+If a bad commit reaches production:
+
+1. `git revert HEAD` (or the offending commit)
+2. `git push origin main` — triggers auto-deploy + release workflow
+3. Monitor GitHub Actions → "Production Release" for green status
+4. Verify with `curl /health` and frontend bundle check
+
+### Day-2 ops quick triage
+
+Run these checks in order when something seems wrong:
+
+```bash
+# 1. Backend alive?
+curl -sf https://archscan.onrender.com/health | python3 -c "import sys,json; print(json.load(sys.stdin))"
+
+# 2. Postgres connected?
+curl -sf https://archscan.onrender.com/health | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('storage')=='postgres', f'BAD: {d}'"
+
+# 3. CORS allows frontend?
+curl -s -D - -o /dev/null -X OPTIONS -H "Origin: https://archscan-planandgo.netlify.app" -H "Access-Control-Request-Method: GET" https://archscan.onrender.com/health | grep -i access-control
+
+# 4. Frontend serving correct API target?
+curl -sf https://archscan-planandgo.netlify.app | grep -c "localhost:8000" && echo "BAD: localhost in bundle" || echo "OK: no localhost"
+
+# 5. API endpoints responding?
+for p in /projects /rulesets; do echo -n "$p: "; curl -s -o /dev/null -w "%{http_code}" "https://archscan.onrender.com$p"; echo; done
+```
+
+### Known failure signatures
+
+| Signature | Classification | Resolution |
+|-----------|---------------|------------|
+| `npm ci` fails with "missing lockfile" | Build config | Run `npm install` locally, commit `package-lock.json` |
+| `VITE_API_BASE_URL` not set error | Env config | Set in Netlify → Site settings → Environment variables |
+| `NETLIFY_AUTH_TOKEN secret not configured` | CI secret | Add `NETLIFY_AUTH_TOKEN` in GitHub → Settings → Secrets |
+| Backend 503 for 5+ minutes | Platform issue | Check Render status page, try manual deploy |
+| CORS header missing frontend origin | Backend env | Set `ALLOWED_ORIGINS` in Render to include Netlify domain |
+| Smoke tests pass but frontend is blank | Frontend build error | Check Netlify deploy logs for build output |
 
 ## ENV Security Policy
 
@@ -199,6 +286,12 @@ curl https://archscan.onrender.com/health
 | `DATABASE_URL` | Render env vars | **No** (contains credentials) |
 | `ALLOWED_ORIGINS` | Render env vars | Yes (just domain names) |
 | Future API keys | Render env vars | **No** |
+
+### GitHub Secrets (for CI/CD)
+
+| Secret | Purpose | Where to set |
+|--------|---------|--------------|
+| `NETLIFY_AUTH_TOKEN` | Enables fallback CLI deploy from GitHub Actions | GitHub → Settings → Secrets → Actions |
 
 ### Guardrails in place
 

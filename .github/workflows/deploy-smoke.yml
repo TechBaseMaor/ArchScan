@@ -1,10 +1,14 @@
+# ── Post-Deploy Smoke Tests (Observability) ──────────────────────────────
+#
+# Lightweight observability layer that runs alongside the main
+# release-production.yml workflow. This is NOT the gating check —
+# see release-production.yml for the authoritative release status.
+#
+# Retained for independent monitoring and manual dispatch.
+#
 name: Post-Deploy Smoke Tests
 
 on:
-  # Run after push to main (Render auto-deploys from this branch)
-  push:
-    branches: [main]
-  # Allow manual trigger for on-demand verification
   workflow_dispatch:
 
 env:
@@ -12,17 +16,7 @@ env:
   FRONTEND_URL: https://archscan-planandgo.netlify.app
 
 jobs:
-  wait-for-deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Wait for Render deploy to go live
-        run: |
-          echo "Waiting for new deployment to propagate..."
-          sleep 300
-
   smoke-backend:
-    needs: wait-for-deploy
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -60,17 +54,6 @@ jobs:
           test "$HTTP_CODE" = "200"
           python3 -c "import json; d=json.load(open('/tmp/rulesets.json')); assert isinstance(d, list), f'Expected list, got {type(d)}'; print(f'{len(d)} ruleset(s)')"
 
-      - name: GET /health returns valid JSON schema
-        run: |
-          curl -sf "$API_BASE/health" | python3 -c "
-          import sys, json
-          d = json.load(sys.stdin)
-          required = ['status']
-          for key in required:
-              assert key in d, f'Missing key: {key}'
-          print('Schema valid:', json.dumps(d))
-          "
-
       - name: CORS preflight allows frontend origin
         run: |
           CORS_ORIGIN=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -92,7 +75,6 @@ jobs:
             || { echo "::error::CORS Access-Control-Allow-Origin does not include $FRONTEND_URL"; exit 1; }
 
   smoke-frontend:
-    needs: wait-for-deploy
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

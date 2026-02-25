@@ -1,17 +1,53 @@
+# ── ArchScan Frontend — Netlify Deploy Configuration ─────────────────────
+#
 # Required environment variable (set in Netlify UI → Site settings → Environment variables):
 #   VITE_API_BASE_URL = https://archscan.onrender.com
+#
 # The prebuild script (frontend/scripts/validate-env.js) will fail the build
 # if this variable is missing or set to localhost in CI.
 
+# ── Production build ─────────────────────────────────────────────────────
 [build]
   base = "frontend"
-  command = "npm install && npm run build"
+  command = "npm ci --prefer-offline && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
+  CI = "true"
+  NPM_FLAGS = "--prefer-offline"
 
+# ── Deploy-context overrides ─────────────────────────────────────────────
+
+# Production: strict build, security headers
+[context.production]
+  command = "npm ci --prefer-offline && npm run build"
+
+[context.production.environment]
+  NODE_ENV = "production"
+
+# Deploy previews (PRs): same build, but allowed to warn instead of fail
+[context.deploy-preview]
+  command = "npm ci --prefer-offline && npm run build"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+# Branch deploys: disabled (only main goes to production)
+[context.branch-deploy]
+  command = "echo 'Branch deploys disabled — only main is deployed' && exit 0"
+
+# ── SPA redirect ─────────────────────────────────────────────────────────
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ── Security headers ────────────────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

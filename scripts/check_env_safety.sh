@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Pre-commit / pre-build safety check for environment files.
+# Pre-commit / pre-build / pre-deploy safety check for environment files.
 #
 # Detects:
 #   1. Secret-looking values leaked into frontend source
 #   2. .env files accidentally staged in git
 #   3. Mismatched templates vs validators
+#   4. Deploy configuration sanity (netlify.toml, CI flag)
 #
 # Usage: ./scripts/check_env_safety.sh
 # Returns exit 1 if any check fails.
@@ -15,8 +16,9 @@ FAIL=0
 
 fail() { echo "  [FAIL] $1"; FAIL=$((FAIL + 1)); }
 pass() { echo "  [PASS] $1"; }
+warn() { echo "  [WARN] $1"; }
 
-echo "=== ArchScan: ENV Safety Check ==="
+echo "=== ArchScan: ENV + Deploy Safety Check ==="
 echo ""
 
 # --- 1. No secrets in frontend source ---
@@ -69,6 +71,55 @@ if grep -q 'frontend/\.env$' "$ROOT/.gitignore" 2>/dev/null && grep -q '^\.env$'
   pass ".gitignore blocks .env files"
 else
   fail ".gitignore may not fully block .env files — review .gitignore"
+fi
+
+# --- 5. Netlify config sanity ---
+echo ""
+echo "5. Verifying deploy configuration..."
+
+if [ -f "$ROOT/netlify.toml" ]; then
+  pass "netlify.toml exists"
+
+  if grep -q 'npm ci' "$ROOT/netlify.toml" 2>/dev/null; then
+    pass "netlify.toml uses 'npm ci' (lockfile-driven install)"
+  else
+    warn "netlify.toml does not use 'npm ci' — consider switching from 'npm install' for deterministic builds"
+  fi
+
+  if grep -q 'context.production' "$ROOT/netlify.toml" 2>/dev/null; then
+    pass "netlify.toml has production context defined"
+  else
+    warn "netlify.toml missing [context.production] — deploy behavior may vary across contexts"
+  fi
+else
+  fail "netlify.toml not found — Netlify deploy will use platform defaults"
+fi
+
+# --- 6. Package lockfile exists ---
+echo ""
+echo "6. Verifying frontend lockfile exists..."
+
+if [ -f "$ROOT/frontend/package-lock.json" ]; then
+  pass "frontend/package-lock.json exists (npm ci will work)"
+elif [ -f "$ROOT/frontend/yarn.lock" ]; then
+  pass "frontend/yarn.lock exists"
+else
+  fail "No lockfile in frontend/ — npm ci will fail, builds are non-deterministic"
+fi
+
+# --- 7. Validate-env script present ---
+echo ""
+echo "7. Verifying pre-build env validation..."
+
+if [ -f "$ROOT/frontend/scripts/validate-env.js" ]; then
+  pass "validate-env.js pre-build guard present"
+  if grep -q '"prebuild"' "$ROOT/frontend/package.json" 2>/dev/null; then
+    pass "package.json has 'prebuild' script wired"
+  else
+    fail "package.json missing 'prebuild' script — validate-env.js won't run automatically"
+  fi
+else
+  fail "frontend/scripts/validate-env.js not found — builds may succeed with bad env"
 fi
 
 # --- Summary ---

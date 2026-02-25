@@ -1,0 +1,244 @@
+# ── ArchScan Production Release Pipeline ────────────────────────────────
+#
+# Canonical production release workflow. This is the single source of truth
+# for whether a release is healthy. Runs on every push to main, and can
+# also be triggered manually for incident recovery / re-deploy.
+#
+# Flow:
+#   1. preflight  — tests, env safety, frontend build check
+#   2. deploy-verify — wait for platform deploys, verify both endpoints
+#   3. smoke-tests — health, CORS, API, frontend bundle checks
+#
+# The Netlify token is used ONLY for checking deploy status and triggering
+# redeployment on failure. It is stored as a GitHub secret: NETLIFY_AUTH_TOKEN
+#
+name: Production Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_redeploy:
+        description: "Force Netlify redeploy even if current deploy looks healthy"
+        type: boolean
+        default: false
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+env:
+  API_BASE: https://archscan.onrender.com
+  FRONTEND_URL: https://archscan-planandgo.netlify.app
+  NETLIFY_SITE_ID: "archscan-planandgo"
+
+jobs:
+  # ── 1. Pre-flight checks ───────────────────────────────────────────────
+  preflight:
+    name: "Preflight: tests + env safety"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit + regression tests
+        run: python -m pytest tests/ -x -q --tb=short
+
+      - name: Env safety checks
+        run: ./scripts/check_env_safety.sh
+
+      - name: Verify frontend builds locally
+        working-directory: frontend
+        run: |
+          npm ci --prefer-offline
+          VITE_API_BASE_URL="${{ env.API_BASE }}" CI=true npm run build
+
+  # ── 2. Wait for platform deploys + verify endpoints ────────────────────
+  deploy-verify:
+    name: "Verify platform deploys"
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    outputs:
+      backend_healthy: ${{ steps.backend.outputs.healthy }}
+      frontend_healthy: ${{ steps.frontend.outputs.healthy }}
+    steps:
+      - name: Wait for Render cold-start
+        run: |
+          echo "Waiting 90s for Render to pick up new commit..."
+          sleep 90
+
+      - name: Poll backend health (retries)
+        id: backend
+        run: |
+          echo "Polling $API_BASE/health ..."
+          for attempt in 1 2 3 4 5 6 7 8; do
+            RESP=$(curl -sf --max-time 15 "$API_BASE/health" 2>/dev/null || echo "FAIL")
+            if echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['status']=='ok'" 2>/dev/null; then
+              echo "Backend healthy on attempt $attempt"
+              echo "healthy=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Attempt $attempt failed, waiting 30s..."
+            sleep 30
+          done
+          echo "::error::Backend did not become healthy after 8 attempts"
+          echo "healthy=false" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Poll frontend (retries)
+        id: frontend
+        run: |
+          echo "Polling $FRONTEND_URL ..."
+          for attempt in 1 2 3 4 5; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$FRONTEND_URL" 2>/dev/null || echo "000")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Frontend responding 200 on attempt $attempt"
+              echo "healthy=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Attempt $attempt: HTTP $HTTP_CODE, waiting 20s..."
+            sleep 20
+          done
+          echo "::error::Frontend did not respond 200 after 5 attempts"
+          echo "healthy=false" >> "$GITHUB_OUTPUT"
+          exit 1
+
+  # ── 3. Smoke tests ────────────────────────────────────────────────────
+  smoke-tests:
+    name: "Smoke tests"
+    needs: deploy-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Backend health + storage
+        run: |
+          RESP=$(curl -sf --retry 3 --retry-delay 10 "$API_BASE/health")
+          echo "Health: $RESP"
+          echo "$RESP" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          assert d['status'] == 'ok', f'Bad status: {d}'
+          storage = d.get('storage', 'unknown')
+          if storage != 'postgres':
+              print(f'::warning::Storage is {storage}, expected postgres')
+          else:
+              print('Storage: postgres OK')
+          "
+
+      - name: API endpoints respond
+        run: |
+          for path in /projects /rulesets; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE$path")
+            echo "$path -> HTTP $CODE"
+            test "$CODE" = "200" || { echo "::error::$path returned $CODE"; exit 1; }
+          done
+
+      - name: CORS preflight
+        run: |
+          ACAO=$(curl -s -D - -o /dev/null \
+            -X OPTIONS \
+            -H "Origin: $FRONTEND_URL" \
+            -H "Access-Control-Request-Method: GET" \
+            "$API_BASE/health" | grep -i "access-control-allow-origin" | tr -d '\r')
+          echo "CORS header: $ACAO"
+          echo "$ACAO" | grep -qi "archscan-planandgo.netlify.app" \
+            && echo "CORS OK" \
+            || { echo "::error::CORS does not allow frontend origin"; exit 1; }
+
+      - name: Frontend bundle integrity
+        run: |
+          HTML=$(curl -sf "$FRONTEND_URL")
+          echo "$HTML" | grep -q "ArchScan" && echo "App title found" \
+            || echo "::warning::ArchScan title not found in HTML"
+
+          if echo "$HTML" | grep -q "localhost:8000"; then
+            echo "::error::Frontend bundle references localhost:8000"
+            exit 1
+          fi
+          echo "No localhost in bundle OK"
+
+  # ── 4. Netlify fallback redeploy ──────────────────────────────────────
+  netlify-fallback:
+    name: "Netlify fallback redeploy"
+    needs: [deploy-verify, smoke-tests]
+    if: failure() || (github.event.inputs.force_redeploy == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: ${{ env.API_BASE }}
+          CI: "true"
+        run: |
+          npm ci --prefer-offline
+          npm run build
+
+      - name: Deploy to Netlify (CLI push)
+        working-directory: frontend
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::error::NETLIFY_AUTH_TOKEN secret not configured. Add it to GitHub → Settings → Secrets."
+            exit 1
+          fi
+          echo "Deploying to Netlify via CLI..."
+          netlify deploy --prod --dir=dist --message="Fallback deploy from GitHub Actions ($(git rev-parse --short HEAD))"
+
+      - name: Verify fallback deploy
+        run: |
+          sleep 15
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$FRONTEND_URL")
+          echo "Post-fallback HTTP: $CODE"
+          test "$CODE" = "200" || { echo "::error::Fallback deploy verification failed"; exit 1; }
+          echo "Fallback deploy successful"
+
+  # ── 5. Release status summary ─────────────────────────────────────────
+  release-status:
+    name: "Release status"
+    needs: [preflight, deploy-verify, smoke-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Determine release health
+        run: |
+          echo "## Release Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Preflight | ${{ needs.preflight.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Deploy Verify | ${{ needs.deploy-verify.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Smoke Tests | ${{ needs.smoke-tests.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ needs.smoke-tests.result }}" = "success" ]; then
+            echo "### Release HEALTHY" >> "$GITHUB_STEP_SUMMARY"
+            echo "Release is healthy"
+          else
+            echo "### Release DEGRADED — check logs" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Release did not pass all checks"
+          fi
