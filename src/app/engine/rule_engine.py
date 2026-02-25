@@ -134,6 +134,8 @@ def _execute_computation(
         findings.extend(_cross_doc_area_consistency(rule, all_facts, params, project_id, revision_id, validation_id, locale))
     elif formula == "intersection_count_max":
         findings.extend(_intersection_count_max(rule, matched_facts, params, project_id, revision_id, validation_id, locale))
+    elif formula == "submission_vs_regulation_check":
+        findings.extend(_submission_vs_regulation_check(rule, all_facts, params, project_id, revision_id, validation_id, locale))
     else:
         logger.warning("Unknown formula '%s' in rule %s:%s", formula, rule.rule_id, rule.version)
 
@@ -279,6 +281,60 @@ def _intersection_count_max(rule, facts, params, pid, rid, vid, locale) -> list[
                 count - max_count,
                 {},
             ))
+    return results
+
+
+def _submission_vs_regulation_check(rule, all_facts, params, pid, rid, vid, locale) -> list[Finding]:
+    """Compare submission facts vs regulation facts for the same category."""
+    category = params.get("fact_category", "")
+    comparison = params.get("comparison", "gte")
+    if not category:
+        return []
+
+    submission_facts = [
+        f for f in all_facts
+        if f.category == category and f.metadata.get("profile") == "submission"
+    ]
+    regulation_facts = [
+        f for f in all_facts
+        if f.category == category and f.metadata.get("profile") == "regulation"
+    ]
+
+    if not submission_facts or not regulation_facts:
+        return []
+
+    results: list[Finding] = []
+    for sf in submission_facts:
+        for rf in regulation_facts:
+            try:
+                sv = float(sf.value)
+                rv = float(rf.value)
+            except (TypeError, ValueError):
+                continue
+
+            violation = False
+            if comparison == "gte" and sv < rv:
+                violation = True
+            elif comparison == "lte" and sv > rv:
+                violation = True
+            elif comparison == "eq" and sv != rv:
+                violation = True
+
+            if violation:
+                diff = sv - rv
+                msg = (
+                    f"Cross-document mismatch ({category}): "
+                    f"submission={sv}, regulation={rv}, diff={diff:+.2f}"
+                )
+                results.append(_make_finding(
+                    rule, vid, pid, rid,
+                    msg,
+                    [sf, rf],
+                    "submission_vs_regulation_check",
+                    {"submission_value": sv, "regulation_value": rv, "comparison": comparison},
+                    diff,
+                    {},
+                ))
     return results
 
 

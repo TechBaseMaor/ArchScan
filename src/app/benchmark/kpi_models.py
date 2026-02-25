@@ -38,6 +38,7 @@ class EntryResult(BaseModel):
     false_positives: int = 0
     false_negatives: int = 0
     errors: list[str] = Field(default_factory=list)
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class BenchmarkRun(BaseModel):

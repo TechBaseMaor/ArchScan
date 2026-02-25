@@ -4,12 +4,14 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
 
 from src.app.domain.models import (
+    ComplianceReport,
     Finding,
     StartValidationRequest,
     ValidationRun,
 )
 from src.app.storage import repo
 from src.app.validation.worker import validation_manager
+from src.app.reporting.insights_service import build_compliance_report
 from src.app.i18n import resolve_locale, t
 
 router = APIRouter()
@@ -59,6 +61,32 @@ async def get_findings(validation_id: str, request: Request):
     if not run:
         raise HTTPException(status_code=404, detail=t("error.validation_not_found", locale))
     return repo.load_findings(validation_id)
+
+
+@router.get("/{validation_id}/compliance", response_model=ComplianceReport)
+async def get_compliance_report(validation_id: str, request: Request):
+    """Grouped compliance report with findings by rule layer and discipline."""
+    locale = resolve_locale(request)
+    run = repo.get_validation(validation_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=t("error.validation_not_found", locale))
+
+    findings = repo.load_findings(validation_id)
+    ruleset = repo.get_ruleset(run.ruleset_id)
+    facts = repo.load_facts(run.project_id, run.revision_id)
+
+    rev = repo.get_revision(run.project_id, run.revision_id)
+    sources = rev.sources if rev else None
+
+    return build_compliance_report(
+        validation_id=validation_id,
+        project_id=run.project_id,
+        revision_id=run.revision_id,
+        findings=findings,
+        ruleset=ruleset,
+        sources=sources,
+        facts=facts,
+    )
 
 
 @router.get("/{validation_id}/report")

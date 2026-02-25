@@ -339,6 +339,157 @@
         "min_setback": 5.0
       },
       "expected_findings": []
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-3729a",
+      "name": "Tel Aviv Taba 3729A (Statutory Plan - Scanned)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - Taba document (scanned)",
+      "tags": ["pilot", "tel-aviv", "regulation", "taba", "scanned"],
+      "baseline_status": "exploratory",
+      "notes": "43-page scanned PDF of Taba 3729A - requires OCR for text extraction"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-3729a-t",
+      "name": "Tel Aviv Tashrit 3729A_T (Statutory Map)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - Tashrit map",
+      "tags": ["pilot", "tel-aviv", "regulation", "tashrit", "map"],
+      "baseline_status": "exploratory",
+      "notes": "Single large-format scanned page - statutory plan map"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-spatial-parking",
+      "name": "Tel Aviv Spatial Guidelines - Parking and Site Development",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - spatial guidelines",
+      "tags": ["pilot", "tel-aviv", "regulation", "parking", "spatial-guidelines"],
+      "baseline_status": "gating",
+      "notes": "17-page vector PDF - fences, parking, site development rules"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-spatial-building",
+      "name": "Tel Aviv Spatial Guidelines - Building Design (Ed. 7)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - building design guidelines",
+      "tags": ["pilot", "tel-aviv", "regulation", "building-design", "spatial-guidelines"],
+      "baseline_status": "gating",
+      "notes": "19-page vector PDF - balconies, heights, materials, roofs"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-waste",
+      "name": "Tel Aviv Waste Collection Policy",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - waste policy",
+      "tags": ["pilot", "tel-aviv", "regulation", "waste"],
+      "baseline_status": "exploratory",
+      "notes": "21-page vector PDF - waste room sizing, collection bins, disposal routes"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-environment",
+      "name": "Tel Aviv Environmental Quality Policy",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - environment policy",
+      "tags": ["pilot", "tel-aviv", "regulation", "environment", "acoustics"],
+      "baseline_status": "exploratory",
+      "notes": "13-page vector PDF - noise, soil contamination, air quality, radiation"
+    },
+    {
+      "entry_id": "pilot-tlv-regulation-green",
+      "name": "Tel Aviv Green Building Policy Summary (TA/9144)",
+      "category": "regulatory_text",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - green building policy",
+      "tags": ["pilot", "tel-aviv", "regulation", "green-building", "energy"],
+      "baseline_status": "exploratory",
+      "notes": "7-page vector PDF - energy rating, bicycle parking, EV charging"
+    },
+    {
+      "entry_id": "pilot-tlv-submission-committee-draft",
+      "name": "Tel Aviv Committee Draft (Permit Application)",
+      "category": "medium",
+      "source_format": "pdf",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - committee draft",
+      "tags": ["pilot", "tel-aviv", "submission", "permit-application"],
+      "baseline_status": "gating",
+      "ground_truth": {
+        "extra": {
+          "dwelling_units": 19,
+          "parking_spaces": 20,
+          "floors": 6
+        }
+      },
+      "notes": "12-page Word-generated PDF - full permit application with setbacks, areas, units"
+    },
+    {
+      "entry_id": "pilot-tlv-submission-building-plan",
+      "name": "Tel Aviv Building Plan 1:100 (DWFx)",
+      "category": "medium",
+      "source_format": "dwfx",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - building plan",
+      "tags": ["pilot", "tel-aviv", "submission", "building-plan", "dwfx"],
+      "baseline_status": "gating",
+      "notes": "3-sheet DWFx - floor plans, sections, elevations"
+    },
+    {
+      "entry_id": "pilot-tlv-submission-survey",
+      "name": "Tel Aviv Site Survey (DWFx)",
+      "category": "simple",
+      "source_format": "dwfx",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - site survey",
+      "tags": ["pilot", "tel-aviv", "submission", "survey", "dwfx"],
+      "baseline_status": "exploratory",
+      "notes": "Single-sheet DWFx - certified surveyor map with plot boundaries"
+    },
+    {
+      "entry_id": "pilot-tlv-submission-traffic",
+      "name": "Tel Aviv Traffic Appendix (DWFx)",
+      "category": "simple",
+      "source_format": "dwfx",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - traffic appendix",
+      "tags": ["pilot", "tel-aviv", "submission", "traffic", "dwfx"],
+      "baseline_status": "exploratory",
+      "notes": "Single-sheet DWFx - parking layout, turning radii, access"
+    },
+    {
+      "entry_id": "pilot-tlv-submission-area-calc",
+      "name": "Tel Aviv Area Calculation 1:150 (DWFx)",
+      "category": "simple",
+      "source_format": "dwfx",
+      "source_url": "local://pilot",
+      "download_policy": "manual",
+      "license_note": "Municipal permit pilot - area calculation",
+      "tags": ["pilot", "tel-aviv", "submission", "area-calculation", "dwfx"],
+      "baseline_status": "gating",
+      "notes": "Single wide-format DWFx - official area calculation sheet"
     }
   ]
 }

@@ -42,10 +42,18 @@ class FactType(str, Enum):
     TEXTUAL = "textual"
 
 
+class DocumentRole(str, Enum):
+    REGULATION = "regulation"
+    SUBMISSION = "submission"
+    SUPPORTING = "supporting"
+    UNKNOWN = "unknown"
+
+
 class SourceFormat(str, Enum):
     IFC = "ifc"
     PDF = "pdf"
     DWG = "dwg"
+    DWFX = "dwfx"
 
 
 # ── Core entities ──────────────────────────────────────────────────────────
@@ -78,6 +86,8 @@ class SourceFile(BaseModel):
     source_hash: str
     size_bytes: int
     stored_path: str
+    document_role: DocumentRole = DocumentRole.UNKNOWN
+    document_type: str = ""
 
 
 class Revision(BaseModel):
@@ -145,7 +155,11 @@ class RevisionSummary(BaseModel):
     floors: list[SummaryMetric] = Field(default_factory=list)
     openings: list[SummaryMetric] = Field(default_factory=list)
     setbacks: list[SummaryMetric] = Field(default_factory=list)
+    parking: list[SummaryMetric] = Field(default_factory=list)
+    dwelling_units: list[SummaryMetric] = Field(default_factory=list)
+    regulatory_thresholds: list[SummaryMetric] = Field(default_factory=list)
     reconciliation: list[ReconciliationEntry] = Field(default_factory=list)
+    missing_documents: list[str] = Field(default_factory=list)
     total_facts: int = 0
     sources_used: list[str] = Field(default_factory=list)
 
@@ -180,6 +194,7 @@ class Rule(BaseModel):
     preconditions: list[RulePrecondition] = Field(default_factory=list)
     computation: RuleComputation
     evidence_template: EvidenceTemplate = Field(default_factory=lambda: EvidenceTemplate(description=""))
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class RuleSet(BaseModel):
@@ -226,6 +241,41 @@ class Finding(BaseModel):
     revision_id: str
     source_hashes: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_now)
+
+
+# ── Grouped Compliance Report ─────────────────────────────────────────────
+
+class ComplianceGroup(BaseModel):
+    """Findings grouped by rule layer and discipline."""
+    layer: str = ""                           # statutory / municipal_policy / cross_document
+    discipline: str = ""                      # parking / design / environment / waste / green / general
+    findings: list[Finding] = Field(default_factory=list)
+    pass_count: int = 0
+    fail_count: int = 0
+    warning_count: int = 0
+
+
+class DocumentCoverage(BaseModel):
+    """Tracks which source documents contributed facts for validation."""
+    file_name: str
+    document_role: str
+    document_type: str
+    facts_extracted: int = 0
+    rules_evaluated: int = 0
+
+
+class ComplianceReport(BaseModel):
+    """Bundle-level compliance report with grouped findings."""
+    validation_id: str
+    project_id: str
+    revision_id: str
+    groups: list[ComplianceGroup] = Field(default_factory=list)
+    document_coverage: list[DocumentCoverage] = Field(default_factory=list)
+    missing_documents: list[str] = Field(default_factory=list)
+    total_findings: int = 0
+    total_errors: int = 0
+    total_warnings: int = 0
+    total_info: int = 0
 
 
 # ── Audit ──────────────────────────────────────────────────────────────────

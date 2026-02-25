@@ -5,6 +5,7 @@ from typing import Any
 
 from src.app.domain.models import (
     CreateProjectRequest,
+    DocumentRole,
     ExtractedFact,
     Project,
     ProjectHistoryEntry,
@@ -15,6 +16,7 @@ from src.app.domain.models import (
 )
 from src.app.storage import repo
 from src.app.ingestion.pipeline import run_ingestion
+from src.app.ingestion.bundle_classifier import classify_source
 from src.app.i18n import resolve_locale, t
 
 router = APIRouter()
@@ -28,6 +30,8 @@ def _detect_format(filename: str, locale: str = "en") -> SourceFormat:
         return SourceFormat.PDF
     if lower.endswith(".dwg"):
         return SourceFormat.DWG
+    if lower.endswith(".dwfx"):
+        return SourceFormat.DWFX
     raise HTTPException(status_code=400, detail=t("error.unsupported_format", locale, filename=filename))
 
 
@@ -77,15 +81,17 @@ async def create_revision(
         fmt = _detect_format(upload.filename or "unknown", locale)
         content = await upload.read()
         source_hash, stored_path = repo.store_source_file(project_id, upload.filename or "unknown", content)
-        sources.append(
-            SourceFile(
-                file_name=upload.filename or "unknown",
-                source_format=fmt,
-                source_hash=source_hash,
-                size_bytes=len(content),
-                stored_path=stored_path,
-            )
+        sf = SourceFile(
+            file_name=upload.filename or "unknown",
+            source_format=fmt,
+            source_hash=source_hash,
+            size_bytes=len(content),
+            stored_path=stored_path,
         )
+        role, doc_type = classify_source(sf)
+        sf.document_role = role
+        sf.document_type = doc_type
+        sources.append(sf)
 
     revision.sources = sources
     repo.save_revision(revision)

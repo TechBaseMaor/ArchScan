@@ -12,7 +12,7 @@ from src.app.benchmark.evaluator import (
 
 
 def _make_result(**kwargs) -> EntryResult:
-    defaults = {"entry_id": "test", "category": "simple", "source_format": "ifc"}
+    defaults = {"entry_id": "test", "category": "simple", "source_format": "ifc", "baseline_status": "gating"}
     defaults.update(kwargs)
     return EntryResult(**defaults)
 

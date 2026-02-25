@@ -2,14 +2,22 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from collections import defaultdict
+from typing import Any, Optional
 
 from src.app.config import settings
 from src.app.domain.models import (
     AgreementStatus,
+    ComplianceGroup,
+    ComplianceReport,
+    DocumentCoverage,
     ExtractedFact,
+    Finding,
     ReconciliationEntry,
     RevisionSummary,
+    RuleSet,
+    Severity,
+    SourceFile,
     SummaryMetric,
 )
 
@@ -20,12 +28,16 @@ _HEIGHT_CATEGORIES = {"height"}
 _FLOOR_CATEGORIES = {"level", "floor_summary"}
 _OPENING_CATEGORIES = {"opening_window", "opening_door"}
 _SETBACK_CATEGORIES = {"setback"}
+_PARKING_CATEGORIES = {"parking"}
+_DWELLING_CATEGORIES = {"dwelling_units"}
+_REGULATORY_CATEGORIES = {"regulatory_threshold", "coverage"}
 
 
 def build_revision_summary(
     project_id: str,
     revision_id: str,
     facts: list[ExtractedFact],
+    sources: Optional[list[SourceFile]] = None,
 ) -> RevisionSummary:
     summary = RevisionSummary(project_id=project_id, revision_id=revision_id)
     summary.total_facts = len(facts)
@@ -43,6 +55,18 @@ def build_revision_summary(
             summary.openings.append(metric)
         elif fact.category in _SETBACK_CATEGORIES:
             summary.setbacks.append(metric)
+        elif fact.category in _PARKING_CATEGORIES:
+            summary.parking.append(metric)
+        elif fact.category in _DWELLING_CATEGORIES:
+            summary.dwelling_units.append(metric)
+        elif fact.category in _REGULATORY_CATEGORIES:
+            summary.regulatory_thresholds.append(metric)
+
+    if sources:
+        present_types = {s.document_type for s in sources}
+        for expected in _EXPECTED_DOC_TYPES:
+            if expected not in present_types:
+                summary.missing_documents.append(expected)
 
     summary.reconciliation = _reconcile(facts)
     return summary
@@ -150,3 +174,105 @@ def _compute_agreement(
     if deviation_pct <= threshold * 5:
         return AgreementStatus.MINOR_DEVIATION, round(deviation_pct, 2)
     return AgreementStatus.MAJOR_DEVIATION, round(deviation_pct, 2)
+
+
+# ── Grouped compliance reporting ──────────────────────────────────────────
+
+_DISCIPLINE_MAP: dict[str, str] = {
+    "setback": "design",
+    "height": "design",
+    "area": "design",
+    "coverage": "design",
+    "fence_height": "design",
+    "parking": "parking",
+    "dwelling_units": "general",
+    "floor_summary": "design",
+    "text_clause": "general",
+    "regulatory_threshold": "general",
+    "sheet_info": "general",
+    "sheet_dimensions": "general",
+}
+
+_EXPECTED_DOC_TYPES = {
+    "statutory_plan",
+    "spatial_guidelines",
+    "building_plan",
+    "area_calculation",
+    "site_survey",
+}
+
+
+def build_compliance_report(
+    validation_id: str,
+    project_id: str,
+    revision_id: str,
+    findings: list[Finding],
+    ruleset: Optional[RuleSet] = None,
+    sources: Optional[list[SourceFile]] = None,
+    facts: Optional[list[ExtractedFact]] = None,
+) -> ComplianceReport:
+    """Build a grouped compliance report from validation findings."""
+    groups_map: dict[tuple[str, str], list[Finding]] = defaultdict(list)
+
+    rule_meta: dict[str, dict[str, Any]] = {}
+    if ruleset:
+        for rule in ruleset.rules:
+            rule_meta[f"{rule.rule_id}:{rule.version}"] = rule.metadata
+
+    for finding in findings:
+        meta = rule_meta.get(finding.rule_ref, {})
+        layer = meta.get("layer", "general")
+        cat = finding.computation_trace.inputs.get("category", "")
+        if not cat and finding.input_facts:
+            cat = "general"
+        discipline = _DISCIPLINE_MAP.get(cat, "general")
+        groups_map[(layer, discipline)].append(finding)
+
+    groups: list[ComplianceGroup] = []
+    for (layer, discipline), group_findings in sorted(groups_map.items()):
+        g = ComplianceGroup(
+            layer=layer,
+            discipline=discipline,
+            findings=group_findings,
+            fail_count=sum(1 for f in group_findings if f.severity == Severity.ERROR),
+            warning_count=sum(1 for f in group_findings if f.severity == Severity.WARNING),
+            pass_count=0,
+        )
+        groups.append(g)
+
+    doc_coverage: list[DocumentCoverage] = []
+    if sources:
+        for src in sources:
+            src_facts = [f for f in (facts or []) if f.source_hash == src.source_hash]
+            doc_coverage.append(DocumentCoverage(
+                file_name=src.file_name,
+                document_role=src.document_role.value if hasattr(src.document_role, 'value') else str(src.document_role),
+                document_type=src.document_type,
+                facts_extracted=len(src_facts),
+            ))
+
+    missing_docs: list[str] = []
+    if sources:
+        present_types = {src.document_type for src in sources}
+        for expected in _EXPECTED_DOC_TYPES:
+            if expected not in present_types:
+                missing_docs.append(expected)
+
+    report = ComplianceReport(
+        validation_id=validation_id,
+        project_id=project_id,
+        revision_id=revision_id,
+        groups=groups,
+        document_coverage=doc_coverage,
+        missing_documents=missing_docs,
+        total_findings=len(findings),
+        total_errors=sum(1 for f in findings if f.severity == Severity.ERROR),
+        total_warnings=sum(1 for f in findings if f.severity == Severity.WARNING),
+        total_info=sum(1 for f in findings if f.severity == Severity.INFO),
+    )
+
+    logger.info(
+        "Compliance report: %d findings (%d errors, %d warnings) in %d groups",
+        report.total_findings, report.total_errors, report.total_warnings, len(groups),
+    )
+    return report

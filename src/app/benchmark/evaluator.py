@@ -112,6 +112,75 @@ def compute_avg_validation_time(results: list[EntryResult]) -> Optional[MetricRe
     )
 
 
+def compute_doc_classification_accuracy(results: list[EntryResult]) -> Optional[MetricResult]:
+    """Accuracy of document-role classification (pilot KPI).
+
+    Requires entries to have expected_role in ground_truth and actual_role in details.
+    """
+    correct = 0
+    total = 0
+    for r in results:
+        expected = r.details.get("expected_role")
+        actual = r.details.get("actual_role")
+        if expected and actual:
+            total += 1
+            if expected == actual:
+                correct += 1
+    if total == 0:
+        return None
+    accuracy = correct / total
+    return MetricResult(
+        name="doc_classification_accuracy",
+        value=round(accuracy, 4),
+        threshold=0.9,
+        status=GateStatus.PASS if accuracy >= 0.9 else GateStatus.FAIL,
+        details={"correct": correct, "total": total},
+    )
+
+
+def compute_regulation_rule_coverage(results: list[EntryResult]) -> Optional[MetricResult]:
+    """Fraction of regulation rules that produced at least one finding or pass (pilot KPI)."""
+    total_rules = 0
+    covered_rules = 0
+    for r in results:
+        tr = r.details.get("total_rules", 0)
+        cr = r.details.get("rules_with_results", 0)
+        total_rules += tr
+        covered_rules += cr
+    if total_rules == 0:
+        return None
+    coverage = covered_rules / total_rules
+    return MetricResult(
+        name="regulation_rule_coverage",
+        value=round(coverage, 4),
+        threshold=0.0,
+        status=GateStatus.PASS,
+        details={"covered": covered_rules, "total": total_rules},
+    )
+
+
+def compute_evidence_completeness(results: list[EntryResult]) -> Optional[MetricResult]:
+    """Percentage of findings that include source references (pilot KPI)."""
+    total = 0
+    with_evidence = 0
+    for r in results:
+        t = r.details.get("total_findings", 0)
+        e = r.details.get("findings_with_evidence", 0)
+        total += t
+        with_evidence += e
+    if total == 0:
+        return None
+    pct = with_evidence / total
+    return MetricResult(
+        name="evidence_completeness",
+        value=round(pct, 4),
+        threshold=0.8,
+        status=GateStatus.PASS if pct >= 0.8 else GateStatus.FAIL,
+        unit="%",
+        details={"with_evidence": with_evidence, "total": total},
+    )
+
+
 def evaluate_all(results: list[EntryResult]) -> tuple[list[MetricResult], GateStatus]:
     """Compute all KPI metrics and determine overall gate status.
 
@@ -147,6 +216,18 @@ def evaluate_all(results: list[EntryResult]) -> tuple[list[MetricResult], GateSt
                 m.name = f"{m.name}_exploratory"
                 m.status = GateStatus.SKIP
                 m.details["scope"] = "exploratory"
+                metrics.append(m)
+
+    pilot_entries = [r for r in results if "pilot" in r.details.get("tags", [])]
+    if pilot_entries:
+        for compute_fn in [
+            compute_doc_classification_accuracy,
+            compute_regulation_rule_coverage,
+            compute_evidence_completeness,
+        ]:
+            m = compute_fn(pilot_entries)
+            if m is not None:
+                m.details["scope"] = "pilot"
                 metrics.append(m)
 
     gating_metrics = [m for m in metrics if m.details.get("scope") == "gating"]

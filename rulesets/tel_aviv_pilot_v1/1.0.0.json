@@ -1,0 +1,227 @@
+{
+  "ruleset_id": "tel_aviv_pilot_v1",
+  "name": "Tel Aviv Municipal Permit Pilot v1",
+  "jurisdiction": "IL-TLV",
+  "version": "1.0.0",
+  "effective_date": "2024-01-01",
+  "rules": [
+    {
+      "rule_id": "TLV-STAT-SETBACK-FRONT",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "error",
+      "description": "Front setback (building line) shall meet the minimum required by the approved plan (Taba).",
+      "preconditions": [
+        {"fact_category": "setback", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "setback_min_check",
+        "parameters": {"min_setback": 4.0}
+      },
+      "evidence_template": {
+        "description": "Front setback distance vs. statutory minimum from Taba 3729A",
+        "required_fact_categories": ["setback"]
+      },
+      "metadata": {"layer": "statutory", "source_doc": "3729A"}
+    },
+    {
+      "rule_id": "TLV-STAT-SETBACK-REAR",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "error",
+      "description": "Rear setback shall meet the minimum required by the approved plan.",
+      "preconditions": [
+        {"fact_category": "setback", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "setback_min_check",
+        "parameters": {"min_setback": 5.0}
+      },
+      "evidence_template": {
+        "description": "Rear setback distance vs. statutory minimum from Taba 3729A",
+        "required_fact_categories": ["setback"]
+      },
+      "metadata": {"layer": "statutory", "source_doc": "3729A"}
+    },
+    {
+      "rule_id": "TLV-STAT-SETBACK-SIDE",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "error",
+      "description": "Side setback shall meet the minimum 3.0m.",
+      "preconditions": [
+        {"fact_category": "setback", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "setback_min_check",
+        "parameters": {"min_setback": 3.0}
+      },
+      "evidence_template": {
+        "description": "Side setback distance vs. statutory minimum",
+        "required_fact_categories": ["setback"]
+      },
+      "metadata": {"layer": "statutory", "source_doc": "3729A"}
+    },
+    {
+      "rule_id": "TLV-STAT-HEIGHT-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "error",
+      "description": "Maximum floor-to-ceiling height shall not exceed 3.30m as permitted.",
+      "preconditions": [
+        {"fact_category": "height", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "height_max_check",
+        "parameters": {"max_height": 3.30}
+      },
+      "evidence_template": {
+        "description": "Floor height vs. Taba maximum",
+        "required_fact_categories": ["height"]
+      },
+      "metadata": {"layer": "statutory", "source_doc": "3729A"}
+    },
+    {
+      "rule_id": "TLV-STAT-AREA-MIN-DWELLING",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "error",
+      "description": "Minimum dwelling unit area is 35 m² gross per spatial guidelines.",
+      "preconditions": [
+        {"fact_category": "area", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "area_min_check",
+        "parameters": {"min_area": 35.0}
+      },
+      "evidence_template": {
+        "description": "Dwelling area vs. minimum habitable threshold from spatial guidelines",
+        "required_fact_categories": ["area"]
+      },
+      "metadata": {"layer": "statutory", "source_doc": "spatial_guidelines_building"}
+    },
+    {
+      "rule_id": "TLV-POL-FENCE-HEIGHT-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "warning",
+      "description": "Front fence height in shared residential buildings shall be 0.7m-1.0m per spatial guidelines.",
+      "preconditions": [
+        {"fact_category": "fence_height", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "height_max_check",
+        "parameters": {"max_height": 1.0}
+      },
+      "evidence_template": {
+        "description": "Fence height vs. municipal policy maximum",
+        "required_fact_categories": ["fence_height"]
+      },
+      "metadata": {"layer": "municipal_policy", "source_doc": "spatial_guidelines_parking"}
+    },
+    {
+      "rule_id": "TLV-POL-BALCONY-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "warning",
+      "description": "Balcony projection from building line shall not exceed 1.60m per spatial guidelines.",
+      "preconditions": [
+        {"fact_category": "setback", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "height_max_check",
+        "parameters": {"max_height": 1.60}
+      },
+      "evidence_template": {
+        "description": "Balcony projection vs. policy maximum",
+        "required_fact_categories": ["setback"]
+      },
+      "metadata": {"layer": "municipal_policy", "source_doc": "spatial_guidelines_building"}
+    },
+    {
+      "rule_id": "TLV-POL-ENTRY-LEVEL-MAX",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "warning",
+      "description": "Entry level (miflas knisa kovaat) shall not exceed 0.5m above sidewalk level.",
+      "preconditions": [
+        {"fact_category": "height", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "height_max_check",
+        "parameters": {"max_height": 0.5}
+      },
+      "evidence_template": {
+        "description": "Entry level height vs. policy maximum from spatial guidelines",
+        "required_fact_categories": ["height"]
+      },
+      "metadata": {"layer": "municipal_policy", "source_doc": "spatial_guidelines_building"}
+    },
+    {
+      "rule_id": "TLV-CROSS-DOC-AREA",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "warning",
+      "description": "Cross-document consistency: submission area values vs. regulation area limits.",
+      "preconditions": [],
+      "computation": {
+        "formula": "cross_document_area_consistency",
+        "parameters": {"max_deviation_pct": 0.5}
+      },
+      "evidence_template": {
+        "description": "Area from submission documents vs. area from regulation documents",
+        "required_fact_categories": ["area"]
+      },
+      "metadata": {"layer": "cross_document"}
+    },
+    {
+      "rule_id": "TLV-CROSS-DOC-PARKING",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "warning",
+      "description": "Cross-document consistency: parking spaces provided vs. required.",
+      "preconditions": [
+        {"fact_category": "parking", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "submission_vs_regulation_check",
+        "parameters": {"fact_category": "parking", "comparison": "gte"}
+      },
+      "evidence_template": {
+        "description": "Parking spaces in submission vs. parking requirement from regulation",
+        "required_fact_categories": ["parking"]
+      },
+      "metadata": {"layer": "cross_document"}
+    },
+    {
+      "rule_id": "TLV-CROSS-DOC-UNITS",
+      "version": "1.0",
+      "jurisdiction": "IL-TLV",
+      "effective_from": "2024-01-01",
+      "severity": "info",
+      "description": "Cross-document check: dwelling unit count consistency across documents.",
+      "preconditions": [
+        {"fact_category": "dwelling_units", "operator": "exists"}
+      ],
+      "computation": {
+        "formula": "submission_vs_regulation_check",
+        "parameters": {"fact_category": "dwelling_units", "comparison": "eq"}
+      },
+      "evidence_template": {
+        "description": "Dwelling unit count across submission and regulation documents",
+        "required_fact_categories": ["dwelling_units"]
+      },
+      "metadata": {"layer": "cross_document"}
+    }
+  ]
+}

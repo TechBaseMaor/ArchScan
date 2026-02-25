@@ -34,6 +34,7 @@ from src.app.domain.models import (
 from src.app.engine.rule_engine import evaluate_ruleset
 from src.app.ingestion.ifc_adapter import extract_facts_from_ifc
 from src.app.ingestion.pdf_adapter import extract_facts_from_pdf
+from src.app.ingestion.dwfx_adapter import extract_facts_from_dwfx
 from src.app.storage import repo
 
 logger = logging.getLogger(__name__)
@@ -123,6 +124,8 @@ def _extract_facts(entry: DatasetEntry, file_path: Path) -> list[ExtractedFact]:
         return extract_facts_from_ifc(str(file_path), entry.entry_id, entry.entry_id)
     elif entry.source_format == SourceFormat.PDF:
         return extract_facts_from_pdf(str(file_path), entry.entry_id, entry.entry_id)
+    elif entry.source_format == SourceFormat.DWFX:
+        return extract_facts_from_dwfx(str(file_path), entry.entry_id, entry.entry_id)
     return []
 
 

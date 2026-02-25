@@ -30,6 +30,7 @@ class SourceFormat(str, Enum):
     IFC = "ifc"
     PDF = "pdf"
     DWG = "dwg"
+    DWFX = "dwfx"
 
 
 class GroundTruth(BaseModel):

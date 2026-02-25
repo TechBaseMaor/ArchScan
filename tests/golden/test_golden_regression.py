@@ -154,6 +154,7 @@ class TestKPIGateIntegration:
         results = [
             EntryResult(
                 entry_id="t1", category="simple", source_format="pdf",
+                baseline_status="gating",
                 area_error_pct=0.1, height_error_m=0.005,
                 true_positives=3, false_positives=0, false_negatives=0,
                 ingestion_time_ms=50, validation_time_ms=20,
@@ -167,6 +168,7 @@ class TestKPIGateIntegration:
         results = [
             EntryResult(
                 entry_id="t1", category="simple", source_format="pdf",
+                baseline_status="gating",
                 true_positives=1, false_positives=20, false_negatives=0,
             ),
         ]
