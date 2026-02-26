@@ -54,3 +54,16 @@ export async function listSampleFiles(): Promise<SampleFileInfo[]> {
   const { data } = await api.get<SampleFileInfo[]>('/demo/samples');
   return data;
 }
+
+export async function updateFact(
+  projectId: string,
+  revisionId: string,
+  factId: string,
+  updates: Partial<Pick<ExtractedFact, 'label' | 'value' | 'unit' | 'category'>>,
+): Promise<ExtractedFact> {
+  const { data } = await api.patch<ExtractedFact>(
+    `/projects/${projectId}/revisions/${revisionId}/facts/${factId}`,
+    updates,
+  );
+  return data;
+}

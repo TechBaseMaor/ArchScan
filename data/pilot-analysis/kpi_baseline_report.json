@@ -1,0 +1,92 @@
+{
+  "report_version": "1.0",
+  "created_at": "2026-02-26T12:16:17.337167",
+  "overall_pass": false,
+  "results": [
+    {
+      "name": "unknown_field_rate",
+      "description": "Rate of fields that remain unidentified after enrichment",
+      "value": 0.07258064516129033,
+      "threshold": 0.3,
+      "passed": true,
+      "unit": "%",
+      "details": {}
+    },
+    {
+      "name": "extraction_recall",
+      "description": "Proportion of mandatory parameters successfully extracted",
+      "value": 0.4,
+      "threshold": 0.9,
+      "passed": false,
+      "unit": "%",
+      "details": {}
+    },
+    {
+      "name": "proposal_acceptance_rate",
+      "description": "Rate of AI proposals accepted by users",
+      "value": 1.0,
+      "threshold": 0.6,
+      "passed": true,
+      "unit": "%",
+      "details": {}
+    },
+    {
+      "name": "false_positive_rate",
+      "description": "Rate of AI proposals rejected by users",
+      "value": 0.0,
+      "threshold": 0.15,
+      "passed": true,
+      "unit": "%",
+      "details": {}
+    },
+    {
+      "name": "confidence_improvement",
+      "description": "Average confidence improvement from AI enrichment",
+      "value": 0.0,
+      "threshold": 0.0,
+      "passed": true,
+      "unit": "delta",
+      "details": {}
+    },
+    {
+      "name": "category_coverage",
+      "description": "Proportion of expected categories with at least one extracted fact",
+      "value": 0.5,
+      "threshold": 0.9,
+      "passed": false,
+      "unit": "%",
+      "details": {}
+    }
+  ],
+  "baseline_summary": {
+    "total_facts": 248,
+    "categories": [
+      "dwelling_units",
+      "floor_summary",
+      "parking",
+      "regulatory_threshold",
+      "sheet_dimensions",
+      "sheet_info",
+      "text_clause"
+    ],
+    "category_count": 7
+  },
+  "enriched_summary": {
+    "total_facts": 248,
+    "categories": [
+      "dwelling_units",
+      "floor_summary",
+      "parking",
+      "regulatory_threshold",
+      "sheet_dimensions",
+      "sheet_info",
+      "text_clause"
+    ],
+    "category_count": 7,
+    "new_categories": [],
+    "proposals_total": 0,
+    "proposals_accepted": 0,
+    "proposals_rejected": 0
+  },
+  "recommendation": "KPI gates failed: extraction_recall, category_coverage. Do not enable auto-apply. Review extraction patterns and learned mappings. Continue with Phase A (internal pilot only) until thresholds are met."
+}

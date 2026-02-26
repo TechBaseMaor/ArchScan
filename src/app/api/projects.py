@@ -13,6 +13,7 @@ from src.app.domain.models import (
     RevisionSummary,
     SourceFile,
     SourceFormat,
+    UpdateFactRequest,
 )
 from src.app.storage import repo
 from src.app.ingestion.pipeline import run_ingestion
@@ -116,6 +117,38 @@ async def get_revision_facts(project_id: str, revision_id: str, request: Request
     if not rev:
         raise HTTPException(status_code=404, detail="Revision not found")
     return repo.load_facts(project_id, revision_id)
+
+
+@router.patch("/{project_id}/revisions/{revision_id}/facts/{fact_id}", response_model=ExtractedFact)
+async def update_fact(
+    project_id: str,
+    revision_id: str,
+    fact_id: str,
+    body: UpdateFactRequest,
+    request: Request,
+):
+    locale = resolve_locale(request)
+    proj = repo.get_project(project_id)
+    if not proj:
+        raise HTTPException(status_code=404, detail=t("error.project_not_found", locale))
+    rev = repo.get_revision(project_id, revision_id)
+    if not rev:
+        raise HTTPException(status_code=404, detail="Revision not found")
+
+    updates = body.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    updated = repo.update_fact(project_id, revision_id, fact_id, updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Fact not found")
+
+    repo.log_audit_event("update_fact", "fact", fact_id, {
+        "project_id": project_id,
+        "revision_id": revision_id,
+        "updates": updates,
+    })
+    return updated
 
 
 @router.get("/{project_id}/revisions/{revision_id}/summary", response_model=RevisionSummary)

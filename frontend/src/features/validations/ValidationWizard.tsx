@@ -85,7 +85,7 @@ export default function ValidationWizard() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <Link to={`/projects/${projectId}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
+        <Link to={`/advanced/projects/${projectId}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
           <ArrowLeft size={14} /> {t('validation.backToProject')}
         </Link>
       </div>
@@ -221,11 +221,11 @@ export default function ValidationWizard() {
             </>
           )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 24 }}>
-            <button className="btn-secondary" onClick={() => navigate(`/projects/${projectId}`)}>
+            <button className="btn-secondary" onClick={() => navigate(`/advanced/projects/${projectId}`)}>
               {t('validation.backToProject')}
             </button>
             {validationRun.status === 'done' && (
-              <button className="btn-primary" onClick={() => navigate(`/validations/${validationRun.validation_id}/findings`)}>
+              <button className="btn-primary" onClick={() => navigate(`/advanced/validations/${validationRun.validation_id}/findings`)}>
                 {t('validation.viewFindings')}
               </button>
             )}

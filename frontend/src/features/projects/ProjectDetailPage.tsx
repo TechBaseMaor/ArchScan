@@ -40,7 +40,7 @@ export default function ProjectDetailPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
+        <Link to="/advanced" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
           <ArrowLeft size={14} /> {t('projectDetail.backToProjects')}
         </Link>
       </div>
@@ -50,7 +50,7 @@ export default function ProjectDetailPage() {
           <h1>{project.name}</h1>
           {project.description && <p style={{ color: 'var(--color-text-dim)', fontSize: 14, marginTop: 4 }}>{project.description}</p>}
         </div>
-        <button className="btn-primary" onClick={() => navigate(`/projects/${projectId}/validate`)}>
+        <button className="btn-primary" onClick={() => navigate(`/advanced/projects/${projectId}/validate`)}>
           <Upload size={16} style={{ marginInlineEnd: 6, verticalAlign: -3 }} />
           {t('projectDetail.uploadValidate')}
         </button>
@@ -83,7 +83,7 @@ export default function ProjectDetailPage() {
                       <td style={{ fontSize: 12, color: 'var(--color-text-dim)' }}>{formatDateTime(r.created_at)}</td>
                       <td>
                         <Link
-                          to={`/projects/${projectId}/revisions/${r.revision_id}/insights`}
+                          to={`/advanced/projects/${projectId}/revisions/${r.revision_id}/insights`}
                           className="btn-primary"
                           style={{ fontSize: 12, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                         >

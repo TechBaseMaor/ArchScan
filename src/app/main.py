@@ -10,6 +10,7 @@ from src.app.api.rulesets import router as rulesets_router
 from src.app.api.benchmarks import router as benchmarks_router
 from src.app.api.demo import router as demo_router
 from src.app.api.reviews import router as reviews_router
+from src.app.api.ai_agent import router as ai_agent_router
 from src.app.config import settings
 from src.app.storage.repo import bootstrap_schema
 from src.app.validation.worker import validation_manager
@@ -30,6 +31,9 @@ async def lifespan(app: FastAPI):
         settings.upload_dir,
         settings.rulesets_dir,
         settings.benchmark_dir,
+        settings.data_dir / "learning",
+        settings.data_dir / "learning" / "events",
+        settings.data_dir / "learning" / "mappings",
     ]:
         d.mkdir(parents=True, exist_ok=True)
 
@@ -63,6 +67,7 @@ app.include_router(rulesets_router, prefix="/rulesets", tags=["rulesets"])
 app.include_router(benchmarks_router, prefix="/benchmarks", tags=["benchmarks"])
 app.include_router(demo_router, prefix="/demo", tags=["demo"])
 app.include_router(reviews_router, prefix="/reviews", tags=["reviews"])
+app.include_router(ai_agent_router, prefix="/ai", tags=["ai-agent"])
 
 
 @app.get("/health")

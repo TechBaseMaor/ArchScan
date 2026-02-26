@@ -425,3 +425,110 @@ class ProjectHistoryEntry(BaseModel):
     created_at: datetime
     source_count: int
     validation_count: int
+
+
+# ── AI Agent Proposals ────────────────────────────────────────────────────
+
+class ProposalStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    EDITED = "edited"
+
+
+class AiProposal(BaseModel):
+    """A finding/fact proposed by the AI enrichment agent."""
+    proposal_id: str = Field(default_factory=_new_id)
+    project_id: str
+    revision_id: str
+    source_document: str = ""
+    source_snippet: str = ""
+    category: str = ""
+    label: str = ""
+    value: Any = None
+    unit: str = ""
+    confidence: float = 0.0
+    reasoning: str = ""
+    status: ProposalStatus = ProposalStatus.PENDING
+    decided_by: str = ""
+    decided_at: Optional[datetime] = None
+    edited_value: Any = None
+    edited_label: str = ""
+    created_at: datetime = Field(default_factory=_now)
+    model_version: str = ""
+    prompt_hash: str = ""
+
+
+class AiProposalDecisionRequest(BaseModel):
+    decision: str  # "accepted" | "rejected" | "edited"
+    user: str = "anonymous"
+    edited_value: Any = None
+    edited_label: str = ""
+    notes: str = ""
+
+
+# ── Learning Events ──────────────────────────────────────────────────────
+
+class LearningEventType(str, Enum):
+    FIELD_MAPPING = "field_mapping"
+    VALUE_NORMALIZATION = "value_normalization"
+    PROPOSAL_ACCEPTED = "proposal_accepted"
+    PROPOSAL_REJECTED = "proposal_rejected"
+    PROPOSAL_EDITED = "proposal_edited"
+    MANUAL_CORRECTION = "manual_correction"
+
+
+class LearningEvent(BaseModel):
+    """A user correction/decision that feeds the global learning store."""
+    event_id: str = Field(default_factory=_new_id)
+    event_type: LearningEventType
+    project_id: str = ""
+    revision_id: str = ""
+    proposal_id: str = ""
+    source_document: str = ""
+    jurisdiction: str = ""
+    document_type: str = ""
+    original_label: str = ""
+    canonical_label: str = ""
+    original_value: Any = None
+    corrected_value: Any = None
+    category: str = ""
+    unit: str = ""
+    user: str = "anonymous"
+    acceptance_count: int = 0
+    confidence_delta: float = 0.0
+    created_at: datetime = Field(default_factory=_now)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class LearnedMapping(BaseModel):
+    """A pattern learned from user corrections, promoted after threshold met."""
+    mapping_id: str = Field(default_factory=_new_id)
+    source_pattern: str
+    canonical_term: str
+    category: str = ""
+    unit: str = ""
+    acceptance_count: int = 0
+    rejection_count: int = 0
+    confidence: float = 0.0
+    promoted: bool = False
+    jurisdiction: str = ""
+    document_type: str = ""
+    created_at: datetime = Field(default_factory=_now)
+    updated_at: datetime = Field(default_factory=_now)
+    version: int = 1
+
+
+class AiEnrichmentRequest(BaseModel):
+    project_id: str
+    revision_id: str
+    scope: str = "all"  # "all" | "missing_only" | "low_confidence"
+
+
+class UpdateFactRequest(BaseModel):
+    label: Optional[str] = None
+    value: Any = None
+    unit: Optional[str] = None
+    category: Optional[str] = None
+
+    model_config = {"extra": "forbid"}

@@ -1,0 +1,551 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-02-26T12:15:31.563285",
+  "terms": [
+    {
+      "term_id": "total_building_area",
+      "canonical_name": "Total Building Area",
+      "aliases": [
+        "gross area",
+        "total area",
+        "שטח כולל",
+        "סה\"כ שטחי בניה"
+      ],
+      "hebrew_name": "שטח בנייה כולל",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [
+        "area_check"
+      ],
+      "confidence_boost": 0.1,
+      "external_refs": [
+        {
+          "source": "Israeli Planning and Building Law",
+          "url": "",
+          "section": "תקנות התכנון והבניה (חישוב שטחים)",
+          "description": "Defines how gross building area is calculated for permit purposes"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "net_area",
+      "canonical_name": "Net Area",
+      "aliases": [
+        "net floor area",
+        "שטח נטו",
+        "שטח עיקרי"
+      ],
+      "hebrew_name": "שטח נטו",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [
+        "area_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Israeli Planning and Building Law",
+          "url": "",
+          "section": "תקנות חישוב שטחים, סעיף 4",
+          "description": "Net area excluding service areas, stairwells, and common spaces"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "service_area",
+      "canonical_name": "Service Area",
+      "aliases": [
+        "שטח שירות",
+        "שטחי שירות",
+        "service floor area"
+      ],
+      "hebrew_name": "שטח שירות",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [
+        "area_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "building_height",
+      "canonical_name": "Building Height",
+      "aliases": [
+        "max height",
+        "גובה בניין",
+        "גובה מקסימלי",
+        "גובה מותר"
+      ],
+      "hebrew_name": "גובה בניין",
+      "category": "height",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [
+        "height_check"
+      ],
+      "confidence_boost": 0.1,
+      "external_refs": [
+        {
+          "source": "Taba Plan",
+          "url": "",
+          "section": "",
+          "description": "Maximum permitted building height above ground level"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "floor_height",
+      "canonical_name": "Floor Height",
+      "aliases": [
+        "story height",
+        "גובה קומה",
+        "גובה קומה טיפוסית"
+      ],
+      "hebrew_name": "גובה קומה",
+      "category": "height",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [
+        "height_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "num_floors",
+      "canonical_name": "Number of Floors",
+      "aliases": [
+        "floor count",
+        "stories",
+        "מספר קומות",
+        "קומות"
+      ],
+      "hebrew_name": "מספר קומות",
+      "category": "level",
+      "unit": "floors",
+      "value_type": "integer",
+      "rule_links": [
+        "floor_count_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "front_setback",
+      "canonical_name": "Front Setback",
+      "aliases": [
+        "front yard",
+        "קו בניין קדמי",
+        "נסיגה קדמית"
+      ],
+      "hebrew_name": "קו בניין קדמי",
+      "category": "setback",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [
+        "setback_check"
+      ],
+      "confidence_boost": 0.05,
+      "external_refs": [
+        {
+          "source": "Local Building Plan (Taba)",
+          "url": "",
+          "section": "",
+          "description": "Minimum distance from front lot boundary to building face"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "side_setback",
+      "canonical_name": "Side Setback",
+      "aliases": [
+        "side yard",
+        "קו בניין צידי",
+        "נסיגה צידית"
+      ],
+      "hebrew_name": "קו בניין צידי",
+      "category": "setback",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [
+        "setback_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "rear_setback",
+      "canonical_name": "Rear Setback",
+      "aliases": [
+        "rear yard",
+        "קו בניין אחורי",
+        "נסיגה אחורית"
+      ],
+      "hebrew_name": "קו בניין אחורי",
+      "category": "setback",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [
+        "setback_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "parking_spaces",
+      "canonical_name": "Parking Spaces",
+      "aliases": [
+        "parking count",
+        "חניות",
+        "מספר חניות",
+        "מקומות חניה"
+      ],
+      "hebrew_name": "מקומות חניה",
+      "category": "parking",
+      "unit": "spaces",
+      "value_type": "integer",
+      "rule_links": [
+        "parking_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Municipal Parking Standards",
+          "url": "",
+          "section": "",
+          "description": "Required number of parking spaces per dwelling unit or area"
+        },
+        {
+          "source": "Spatial Guidelines - Parking and Site Development",
+          "url": "",
+          "section": "הנחיות מרחביות לפיתוח המגרש והסדרי חניה",
+          "description": "Alon pilot spatial guidelines for lot development and parking arrangements"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "dwelling_units",
+      "canonical_name": "Dwelling Units",
+      "aliases": [
+        "apartments",
+        "units",
+        "יחידות דיור",
+        "דירות",
+        "מספר דירות"
+      ],
+      "hebrew_name": "יחידות דיור",
+      "category": "dwelling_units",
+      "unit": "units",
+      "value_type": "integer",
+      "rule_links": [
+        "dwelling_unit_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "building_coverage",
+      "canonical_name": "Building Coverage Ratio",
+      "aliases": [
+        "coverage",
+        "lot coverage",
+        "אחוזי כיסוי",
+        "כיסוי קרקע",
+        "תכסית"
+      ],
+      "hebrew_name": "אחוזי כיסוי",
+      "category": "coverage",
+      "unit": "%",
+      "value_type": "numeric",
+      "rule_links": [
+        "coverage_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Local Building Plan",
+          "url": "",
+          "section": "",
+          "description": "Maximum percentage of lot area that may be covered by building footprint"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "building_rights",
+      "canonical_name": "Building Rights (FAR)",
+      "aliases": [
+        "floor area ratio",
+        "זכויות בנייה",
+        "אחוזי בנייה",
+        "מקדם ניצול"
+      ],
+      "hebrew_name": "זכויות בנייה",
+      "category": "regulatory_threshold",
+      "unit": "%",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Israeli Planning Law",
+          "url": "",
+          "section": "",
+          "description": "Floor Area Ratio — total permitted building area relative to lot area"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "waste_collection",
+      "canonical_name": "Waste Collection Area",
+      "aliases": [
+        "garbage room",
+        "אצירת אשפה",
+        "חדר אשפה",
+        "מתחם אשפה"
+      ],
+      "hebrew_name": "אצירת אשפה",
+      "category": "environment",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Municipal Waste Policy",
+          "url": "",
+          "section": "מדיניות להיתרי בניה בנושא אצירת אשפה",
+          "description": "Requirements for waste collection rooms/areas in new buildings"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "green_building",
+      "canonical_name": "Green Building Standard",
+      "aliases": [
+        "sustainable building",
+        "בנייה ירוקה",
+        "תקן ירוק",
+        "Israeli Green Standard 5281"
+      ],
+      "hebrew_name": "בנייה ירוקה",
+      "category": "environment",
+      "unit": "points",
+      "value_type": "score",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Israeli Standard 5281",
+          "url": "https://www.sii.org.il",
+          "section": "",
+          "description": "Israeli Green Building Standard for sustainable construction rating"
+        },
+        {
+          "source": "Municipal Green Building Policy",
+          "url": "",
+          "section": "תמצית מדיניות בניה ירוקה להיתרי בניה",
+          "description": "Summary of green building policy for building permits"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "lot_area",
+      "canonical_name": "Lot Area",
+      "aliases": [
+        "plot area",
+        "site area",
+        "שטח מגרש",
+        "שטח חלקה"
+      ],
+      "hebrew_name": "שטח מגרש",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [
+        "area_check"
+      ],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "basement_area",
+      "canonical_name": "Basement Area",
+      "aliases": [
+        "underground area",
+        "שטח מרתף",
+        "קומת מרתף"
+      ],
+      "hebrew_name": "שטח מרתף",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "roof_area",
+      "canonical_name": "Roof Floor Area",
+      "aliases": [
+        "penthouse area",
+        "שטח גג",
+        "קומת גג"
+      ],
+      "hebrew_name": "שטח קומת גג",
+      "category": "area",
+      "unit": "m²",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "fence_height",
+      "canonical_name": "Fence Height",
+      "aliases": [
+        "wall height",
+        "גובה גדר",
+        "גובה חומה"
+      ],
+      "hebrew_name": "גובה גדר",
+      "category": "setback",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": ""
+    },
+    {
+      "term_id": "environmental_quality",
+      "canonical_name": "Environmental Quality Requirements",
+      "aliases": [
+        "איכות הסביבה",
+        "דרישות סביבתיות"
+      ],
+      "hebrew_name": "איכות הסביבה",
+      "category": "environment",
+      "unit": "",
+      "value_type": "text",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Municipal Environmental Policy",
+          "url": "",
+          "section": "מדיניות להיתרי בניה בנושא איכות הסביבה",
+          "description": "Environmental quality requirements for building permits"
+        }
+      ],
+      "notes": ""
+    },
+    {
+      "term_id": "survey_point",
+      "canonical_name": "Survey Control Point",
+      "aliases": [
+        "benchmark",
+        "נקודת מדידה",
+        "נ.מ.",
+        "נקודת גובה"
+      ],
+      "hebrew_name": "נקודת מדידה",
+      "category": "survey",
+      "unit": "m",
+      "value_type": "numeric",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [],
+      "notes": "Elevation reference points from site survey maps"
+    },
+    {
+      "term_id": "spatial_guidelines",
+      "canonical_name": "Spatial Guidelines",
+      "aliases": [
+        "הנחיות מרחביות",
+        "הנחיות עיצוב",
+        "design guidelines"
+      ],
+      "hebrew_name": "הנחיות מרחביות",
+      "category": "regulatory_threshold",
+      "unit": "",
+      "value_type": "text",
+      "rule_links": [],
+      "confidence_boost": 0.0,
+      "external_refs": [
+        {
+          "source": "Municipal Spatial Guidelines",
+          "url": "",
+          "section": "הנחיות מרחביות לתכנון ועיצוב הבניין",
+          "description": "Spatial design guidelines for building design and planning"
+        }
+      ],
+      "notes": ""
+    }
+  ],
+  "category_index": {
+    "area": [
+      "total_building_area",
+      "net_area",
+      "service_area",
+      "lot_area",
+      "basement_area",
+      "roof_area"
+    ],
+    "height": [
+      "building_height",
+      "floor_height"
+    ],
+    "level": [
+      "num_floors"
+    ],
+    "setback": [
+      "front_setback",
+      "side_setback",
+      "rear_setback",
+      "fence_height"
+    ],
+    "parking": [
+      "parking_spaces"
+    ],
+    "dwelling_units": [
+      "dwelling_units"
+    ],
+    "coverage": [
+      "building_coverage"
+    ],
+    "regulatory_threshold": [
+      "building_rights",
+      "spatial_guidelines"
+    ],
+    "environment": [
+      "waste_collection",
+      "green_building",
+      "environmental_quality"
+    ],
+    "survey": [
+      "survey_point"
+    ]
+  }
+}

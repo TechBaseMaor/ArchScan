@@ -13,5 +13,9 @@ services:
         sync: false  # Neon pooled connection string — set in Render dashboard
       - key: ALLOWED_ORIGINS
         sync: false  # e.g. https://archscan-planandgo.netlify.app — set in Render dashboard
+      - key: OPENAI_API_KEY
+        sync: false  # OpenAI API key for AI agent — set in Render dashboard
+      - key: LLM_MODEL
+        value: "gpt-4o-mini"
       - key: PYTHON_VERSION
         value: "3.11"

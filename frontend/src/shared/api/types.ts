@@ -333,3 +333,81 @@ export interface BenchmarkSummary {
   processed_entries: number;
   metrics: MetricResult[];
 }
+
+// ── AI Agent ──────────────────────────────────────────────────────────────
+
+export type ProposalStatus = 'pending' | 'accepted' | 'rejected' | 'edited';
+
+export interface AiProposal {
+  proposal_id: string;
+  project_id: string;
+  revision_id: string;
+  source_document: string;
+  source_snippet: string;
+  category: string;
+  label: string;
+  value: unknown;
+  unit: string;
+  confidence: number;
+  reasoning: string;
+  status: ProposalStatus;
+  decided_by: string;
+  decided_at: string | null;
+  edited_value: unknown | null;
+  edited_label: string;
+  created_at: string;
+  model_version: string;
+  prompt_hash: string;
+}
+
+export interface AiEnrichmentRequest {
+  project_id: string;
+  revision_id: string;
+  scope: 'all' | 'missing_only' | 'low_confidence';
+}
+
+export interface AiProposalDecision {
+  decision: 'accepted' | 'rejected' | 'edited';
+  user: string;
+  edited_value?: unknown;
+  edited_label?: string;
+  notes?: string;
+}
+
+export interface AiAgentStatus {
+  enabled: boolean;
+  available: boolean;
+  provider: string | null;
+  model: string | null;
+}
+
+export interface LearningEvent {
+  event_id: string;
+  event_type: string;
+  project_id: string;
+  revision_id: string;
+  proposal_id: string;
+  source_document: string;
+  original_label: string;
+  canonical_label: string;
+  original_value: unknown;
+  corrected_value: unknown;
+  category: string;
+  unit: string;
+  user: string;
+  created_at: string;
+}
+
+export interface LearnedMapping {
+  mapping_id: string;
+  source_pattern: string;
+  canonical_term: string;
+  category: string;
+  unit: string;
+  acceptance_count: number;
+  rejection_count: number;
+  confidence: number;
+  promoted: boolean;
+  jurisdiction: string;
+  document_type: string;
+}
