@@ -14,9 +14,12 @@ from psycopg_pool import ConnectionPool
 
 from src.app.config import settings
 from src.app.domain.models import (
+    AiProposal,
     AuditEvent,
     ExtractedFact,
     Finding,
+    LearnedMapping,
+    LearningEvent,
     Project,
     ReviewItem,
     Revision,
@@ -121,6 +124,34 @@ CREATE INDEX IF NOT EXISTS idx_facts_project_revision ON facts (project_id, revi
 CREATE INDEX IF NOT EXISTS idx_audit_events_date ON audit_events (created_date);
 CREATE INDEX IF NOT EXISTS idx_review_items_project_id ON review_items (project_id);
 CREATE INDEX IF NOT EXISTS idx_review_items_status ON review_items (status);
+
+CREATE TABLE IF NOT EXISTS ai_proposals (
+    proposal_id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    revision_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    data JSONB NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS learning_events (
+    event_id TEXT PRIMARY KEY,
+    event_type TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT '',
+    data JSONB NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS learned_mappings (
+    mapping_id TEXT PRIMARY KEY,
+    source_pattern TEXT NOT NULL,
+    canonical_term TEXT NOT NULL,
+    promoted BOOLEAN NOT NULL DEFAULT FALSE,
+    data JSONB NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_proposals_project_revision ON ai_proposals (project_id, revision_id);
+CREATE INDEX IF NOT EXISTS idx_ai_proposals_status ON ai_proposals (status);
+CREATE INDEX IF NOT EXISTS idx_learning_events_type ON learning_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_learned_mappings_promoted ON learned_mappings (promoted);
 """
 
 
@@ -224,6 +255,25 @@ def load_facts(project_id: str, revision_id: str) -> list[ExtractedFact]:
             (project_id, revision_id),
         ).fetchall()
     return [ExtractedFact.model_validate(r["data"]) for r in rows]
+
+
+def update_fact(project_id: str, revision_id: str, fact_id: str, updates: dict) -> ExtractedFact | None:
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT data FROM facts WHERE fact_id = %s AND project_id = %s AND revision_id = %s",
+            (fact_id, project_id, revision_id),
+        ).fetchone()
+        if not row:
+            return None
+        fact = ExtractedFact.model_validate(row["data"])
+        for key, val in updates.items():
+            if hasattr(fact, key):
+                setattr(fact, key, val)
+        conn.execute(
+            "UPDATE facts SET data = %s WHERE fact_id = %s",
+            (Jsonb(fact.model_dump(mode="json")), fact_id),
+        )
+    return fact
 
 
 # ── Validations ────────────────────────────────────────────────────────────
@@ -409,3 +459,132 @@ def log_audit_event(
     details: dict | None = None,
 ) -> None:
     _log_audit(action, resource_type, resource_id, details)
+
+
+# ── AI Proposals ──────────────────────────────────────────────────────────
+
+def save_proposal(proposal: AiProposal) -> None:
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO ai_proposals (proposal_id, project_id, revision_id, status, data) "
+            "VALUES (%s, %s, %s, %s, %s) "
+            "ON CONFLICT (proposal_id) DO UPDATE SET status = EXCLUDED.status, data = EXCLUDED.data",
+            (proposal.proposal_id, proposal.project_id, proposal.revision_id,
+             proposal.status.value, _dump(proposal)),
+        )
+        conn.commit()
+
+
+def save_proposals(proposals: list[AiProposal]) -> None:
+    if not proposals:
+        return
+    with _conn() as conn:
+        for p in proposals:
+            conn.execute(
+                "INSERT INTO ai_proposals (proposal_id, project_id, revision_id, status, data) "
+                "VALUES (%s, %s, %s, %s, %s) "
+                "ON CONFLICT (proposal_id) DO UPDATE SET status = EXCLUDED.status, data = EXCLUDED.data",
+                (p.proposal_id, p.project_id, p.revision_id, p.status.value, _dump(p)),
+            )
+        conn.commit()
+
+
+def get_proposal(project_id: str, revision_id: str, proposal_id: str) -> AiProposal | None:
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT data FROM ai_proposals WHERE proposal_id = %s AND project_id = %s AND revision_id = %s",
+            (proposal_id, project_id, revision_id),
+        ).fetchone()
+    if not row:
+        return None
+    return AiProposal.model_validate(row["data"])
+
+
+def list_proposals(
+    project_id: str,
+    revision_id: str,
+    status: str | None = None,
+) -> list[AiProposal]:
+    clauses = ["project_id = %s", "revision_id = %s"]
+    params: list = [project_id, revision_id]
+    if status:
+        clauses.append("status = %s")
+        params.append(status)
+    sql = f"SELECT data FROM ai_proposals WHERE {' AND '.join(clauses)} ORDER BY proposal_id"
+    with _conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [AiProposal.model_validate(r["data"]) for r in rows]
+
+
+# ── Learning Events ──────────────────────────────────────────────────────
+
+def save_learning_event(event: LearningEvent) -> None:
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO learning_events (event_id, event_type, category, data) "
+            "VALUES (%s, %s, %s, %s) "
+            "ON CONFLICT (event_id) DO NOTHING",
+            (event.event_id, event.event_type.value, event.category, _dump(event)),
+        )
+        conn.commit()
+
+
+def list_learning_events(
+    event_type: str | None = None,
+    category: str | None = None,
+    limit: int = 100,
+) -> list[LearningEvent]:
+    clauses: list[str] = []
+    params: list = []
+    if event_type:
+        clauses.append("event_type = %s")
+        params.append(event_type)
+    if category:
+        clauses.append("category = %s")
+        params.append(category)
+    sql = "SELECT data FROM learning_events"
+    if clauses:
+        sql += f" WHERE {' AND '.join(clauses)}"
+    sql += f" ORDER BY event_id DESC LIMIT %s"
+    params.append(limit)
+    with _conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [LearningEvent.model_validate(r["data"]) for r in rows]
+
+
+# ── Learned Mappings ─────────────────────────────────────────────────────
+
+def save_learned_mapping(mapping: LearnedMapping) -> None:
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO learned_mappings (mapping_id, source_pattern, canonical_term, promoted, data) "
+            "VALUES (%s, %s, %s, %s, %s) "
+            "ON CONFLICT (mapping_id) DO UPDATE SET "
+            "source_pattern = EXCLUDED.source_pattern, canonical_term = EXCLUDED.canonical_term, "
+            "promoted = EXCLUDED.promoted, data = EXCLUDED.data",
+            (mapping.mapping_id, mapping.source_pattern, mapping.canonical_term,
+             mapping.promoted, _dump(mapping)),
+        )
+        conn.commit()
+
+
+def get_learned_mapping(mapping_id: str) -> LearnedMapping | None:
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT data FROM learned_mappings WHERE mapping_id = %s",
+            (mapping_id,),
+        ).fetchone()
+    if not row:
+        return None
+    return LearnedMapping.model_validate(row["data"])
+
+
+def list_learned_mappings(promoted_only: bool = False) -> list[LearnedMapping]:
+    sql = "SELECT data FROM learned_mappings"
+    params: list = []
+    if promoted_only:
+        sql += " WHERE promoted = TRUE"
+    sql += " ORDER BY mapping_id"
+    with _conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [LearnedMapping.model_validate(r["data"]) for r in rows]

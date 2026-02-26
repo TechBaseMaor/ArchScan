@@ -352,15 +352,8 @@ def _make_finding(
     result: Any,
     tolerance: dict,
 ) -> Finding:
-    def _first_present(*keys: str) -> Any:
-        for k in keys:
-            v = inputs.get(k)
-            if v is not None:
-                return v
-        return None
-
-    expected = _first_present("max_allowed", "min_required", "regulation_value")
-    observed = _first_present("measured", "submission_value", "detected")
+    expected = inputs.get("max_allowed") or inputs.get("min_required") or inputs.get("regulation_value")
+    observed = inputs.get("measured") or inputs.get("submission_value") or inputs.get("detected")
     deviation = float(result) if isinstance(result, (int, float)) else None
 
     section_ref = rule.metadata.get("section_ref", "")

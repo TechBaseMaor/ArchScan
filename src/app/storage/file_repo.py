@@ -11,9 +11,12 @@ from pydantic import BaseModel
 
 from src.app.config import settings
 from src.app.domain.models import (
+    AiProposal,
     AuditEvent,
     ExtractedFact,
     Finding,
+    LearnedMapping,
+    LearningEvent,
     Project,
     ReviewItem,
     Revision,
@@ -142,6 +145,19 @@ def load_facts(project_id: str, revision_id: str) -> list[ExtractedFact]:
     if not d.exists():
         return []
     return [_load_model(fp, ExtractedFact) for fp in sorted(d.glob("*.json"))]
+
+
+def update_fact(project_id: str, revision_id: str, fact_id: str, updates: dict) -> ExtractedFact | None:
+    d = _facts_dir(project_id, revision_id)
+    p = d / f"{fact_id}.json"
+    if not p.exists():
+        return None
+    fact = _load_model(p, ExtractedFact)
+    for key, val in updates.items():
+        if hasattr(fact, key):
+            setattr(fact, key, val)
+    _write_json(p, fact.model_dump())
+    return fact
 
 
 # ── Validations ────────────────────────────────────────────────────────────
@@ -286,3 +302,101 @@ def _log_audit(action: str, resource_type: str, resource_id: str, details: dict 
 
 def log_audit_event(action: str, resource_type: str, resource_id: str, details: dict | None = None) -> None:
     _log_audit(action, resource_type, resource_id, details)
+
+
+# ── AI Proposals ──────────────────────────────────────────────────────────
+
+def _proposals_dir(project_id: str, revision_id: str) -> Path:
+    return _project_dir(project_id) / "proposals" / revision_id
+
+
+def save_proposal(proposal: AiProposal) -> None:
+    d = _proposals_dir(proposal.project_id, proposal.revision_id)
+    d.mkdir(parents=True, exist_ok=True)
+    _write_json(d / f"{proposal.proposal_id}.json", proposal.model_dump())
+
+
+def save_proposals(proposals: list[AiProposal]) -> None:
+    for p in proposals:
+        save_proposal(p)
+
+
+def get_proposal(project_id: str, revision_id: str, proposal_id: str) -> AiProposal | None:
+    p = _proposals_dir(project_id, revision_id) / f"{proposal_id}.json"
+    return _load_model(p, AiProposal) if p.exists() else None
+
+
+def list_proposals(
+    project_id: str,
+    revision_id: str,
+    status: str | None = None,
+) -> list[AiProposal]:
+    d = _proposals_dir(project_id, revision_id)
+    if not d.exists():
+        return []
+    items: list[AiProposal] = []
+    for f in sorted(d.glob("*.json")):
+        item = _load_model(f, AiProposal)
+        if status and item.status.value != status:
+            continue
+        items.append(item)
+    return items
+
+
+# ── Learning Events ──────────────────────────────────────────────────────
+
+def _learning_dir() -> Path:
+    return settings.data_dir / "learning"
+
+
+def save_learning_event(event: LearningEvent) -> None:
+    d = _learning_dir() / "events"
+    d.mkdir(parents=True, exist_ok=True)
+    _write_json(d / f"{event.event_id}.json", event.model_dump())
+
+
+def list_learning_events(
+    event_type: str | None = None,
+    category: str | None = None,
+    limit: int = 100,
+) -> list[LearningEvent]:
+    d = _learning_dir() / "events"
+    if not d.exists():
+        return []
+    items: list[LearningEvent] = []
+    for f in sorted(d.glob("*.json"), reverse=True):
+        if len(items) >= limit:
+            break
+        item = _load_model(f, LearningEvent)
+        if event_type and item.event_type.value != event_type:
+            continue
+        if category and item.category != category:
+            continue
+        items.append(item)
+    return items
+
+
+# ── Learned Mappings ─────────────────────────────────────────────────────
+
+def save_learned_mapping(mapping: LearnedMapping) -> None:
+    d = _learning_dir() / "mappings"
+    d.mkdir(parents=True, exist_ok=True)
+    _write_json(d / f"{mapping.mapping_id}.json", mapping.model_dump())
+
+
+def get_learned_mapping(mapping_id: str) -> LearnedMapping | None:
+    p = _learning_dir() / "mappings" / f"{mapping_id}.json"
+    return _load_model(p, LearnedMapping) if p.exists() else None
+
+
+def list_learned_mappings(promoted_only: bool = False) -> list[LearnedMapping]:
+    d = _learning_dir() / "mappings"
+    if not d.exists():
+        return []
+    items: list[LearnedMapping] = []
+    for f in sorted(d.glob("*.json")):
+        item = _load_model(f, LearnedMapping)
+        if promoted_only and not item.promoted:
+            continue
+        items.append(item)
+    return items
