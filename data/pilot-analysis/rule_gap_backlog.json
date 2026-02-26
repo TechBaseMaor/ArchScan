@@ -1,0 +1,37 @@
+[
+  {
+    "category": "area",
+    "gap_type": "completely_missing",
+    "impact_score": 10,
+    "description": "No area facts extracted from any document",
+    "recommendation": "Improve adapter patterns for area or add manual labeling"
+  },
+  {
+    "category": "height",
+    "gap_type": "completely_missing",
+    "impact_score": 9,
+    "description": "No height facts extracted from any document",
+    "recommendation": "Improve adapter patterns for height or add manual labeling"
+  },
+  {
+    "category": "setback",
+    "gap_type": "completely_missing",
+    "impact_score": 8,
+    "description": "No setback facts extracted from any document",
+    "recommendation": "Improve adapter patterns for setback or add manual labeling"
+  },
+  {
+    "category": "coverage",
+    "gap_type": "completely_missing",
+    "impact_score": 5,
+    "description": "No coverage facts extracted from any document",
+    "recommendation": "Improve adapter patterns for coverage or add manual labeling"
+  },
+  {
+    "category": "level",
+    "gap_type": "completely_missing",
+    "impact_score": 3,
+    "description": "No level facts extracted from any document",
+    "recommendation": "Improve adapter patterns for level or add manual labeling"
+  }
+]

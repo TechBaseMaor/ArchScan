@@ -1,0 +1,157 @@
+{
+  "manifest_version": "1.0",
+  "created_at": "2026-02-26T12:14:48.775038",
+  "source_directory": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test",
+  "total_files": 12,
+  "entries": [
+    {
+      "file_name": "3729A.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/3729A.pdf",
+      "size_bytes": 24015899,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "statutory_plan",
+      "discipline": "planning",
+      "file_hash": "6e742b59858e8b56",
+      "quality_notes": []
+    },
+    {
+      "file_name": "3729A_T.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/3729A_T.pdf",
+      "size_bytes": 28390668,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "statutory_plan",
+      "discipline": "planning",
+      "file_hash": "b596c631967ef098",
+      "quality_notes": []
+    },
+    {
+      "file_name": "דראפט לועדה.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/דראפט לועדה.pdf",
+      "size_bytes": 135354,
+      "source_format": "pdf",
+      "document_role": "submission",
+      "document_type": "committee_draft",
+      "discipline": "administration",
+      "file_hash": "f534e1ea0b9d598a",
+      "quality_notes": []
+    },
+    {
+      "file_name": "הנחיות מרחביות לפיתוח המגרש והסדרי חניה (1).pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/הנחיות מרחביות לפיתוח המגרש והסדרי חניה (1).pdf",
+      "size_bytes": 960057,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "spatial_guidelines",
+      "discipline": "design",
+      "file_hash": "dd83f704159b8e90",
+      "quality_notes": []
+    },
+    {
+      "file_name": "הנחיות מרחביות לתכנון ועיצוב הבניין (מהדורה 7).pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/הנחיות מרחביות לתכנון ועיצוב הבניין (מהדורה 7).pdf",
+      "size_bytes": 935657,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "spatial_guidelines",
+      "discipline": "design",
+      "file_hash": "3d71f72c6b18b13a",
+      "quality_notes": []
+    },
+    {
+      "file_name": "חישוב שטחים -150.dwfx",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/חישוב שטחים -150.dwfx",
+      "size_bytes": 2430241,
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "area_calculation",
+      "discipline": "architecture",
+      "file_hash": "8dac4b812940d881",
+      "quality_notes": []
+    },
+    {
+      "file_name": "מדיניות להיתרי בניה בנושא אצירת אשפה.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/מדיניות להיתרי בניה בנושא אצירת אשפה.pdf",
+      "size_bytes": 2591742,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "waste_policy",
+      "discipline": "environment",
+      "file_hash": "275e96f1470494b7",
+      "quality_notes": []
+    },
+    {
+      "file_name": "מדיניות להיתרי בניה_ בנושא איכות הסביבה.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/מדיניות להיתרי בניה_ בנושא איכות הסביבה.pdf",
+      "size_bytes": 622782,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "environment_policy",
+      "discipline": "environment",
+      "file_hash": "7624a94a34e8c480",
+      "quality_notes": []
+    },
+    {
+      "file_name": "מפת מדידה.dwfx",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/מפת מדידה.dwfx",
+      "size_bytes": 136688,
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "site_survey",
+      "discipline": "survey",
+      "file_hash": "af8f15b36d2edcdf",
+      "quality_notes": []
+    },
+    {
+      "file_name": "נספח תנועה.dwfx",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/נספח תנועה.dwfx",
+      "size_bytes": 2855500,
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "traffic_appendix",
+      "discipline": "traffic",
+      "file_hash": "52810f52003f28e2",
+      "quality_notes": []
+    },
+    {
+      "file_name": "תוכנית הגשה 100.dwfx",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/תוכנית הגשה 100.dwfx",
+      "size_bytes": 16084022,
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "building_plan",
+      "discipline": "architecture",
+      "file_hash": "b969c78b6b253e96",
+      "quality_notes": []
+    },
+    {
+      "file_name": "תמצית מדיניות בניה ירוקה להיתרי בניה.pdf",
+      "file_path": "/Users/maorganon/Downloads/ArchScan/golden-dataset/from_alon_for_test/תמצית מדיניות בניה ירוקה להיתרי בניה.pdf",
+      "size_bytes": 468822,
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "green_building_policy",
+      "discipline": "environment",
+      "file_hash": "2cf81c158b67677e",
+      "quality_notes": []
+    }
+  ],
+  "role_summary": {
+    "regulation": 7,
+    "submission": 5
+  },
+  "format_summary": {
+    "pdf": 8,
+    "dwfx": 4
+  },
+  "discipline_summary": {
+    "planning": 2,
+    "administration": 1,
+    "design": 2,
+    "architecture": 2,
+    "environment": 3,
+    "survey": 1,
+    "traffic": 1
+  }
+}

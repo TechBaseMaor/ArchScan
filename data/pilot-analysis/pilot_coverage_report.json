@@ -1,0 +1,505 @@
+{
+  "report_version": "1.0",
+  "created_at": "2026-02-26T12:15:31.561810",
+  "total_files_processed": 12,
+  "total_facts_extracted": 248,
+  "total_errors": 0,
+  "overall_unknown_rate": 0.0,
+  "overall_low_confidence_rate": 0.05241935483870968,
+  "file_results": [
+    {
+      "file_name": "3729A.pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "statutory_plan",
+      "total_facts": 14,
+      "categories_found": [
+        "regulatory_threshold"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "parking",
+        "setback",
+        "text_clause"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 14
+      },
+      "sample_values": {
+        "regulatory_threshold": 7.0
+      },
+      "errors": []
+    },
+    {
+      "file_name": "3729A_T.pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "statutory_plan",
+      "total_facts": 74,
+      "categories_found": [
+        "regulatory_threshold"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "parking",
+        "setback",
+        "text_clause"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 74
+      },
+      "sample_values": {
+        "regulatory_threshold": 3.0
+      },
+      "errors": []
+    },
+    {
+      "file_name": "דראפט לועדה.pdf",
+      "source_format": "pdf",
+      "document_role": "submission",
+      "document_type": "committee_draft",
+      "total_facts": 22,
+      "categories_found": [
+        "dwelling_units",
+        "floor_summary",
+        "parking"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "setback"
+      ],
+      "low_confidence_facts": 13,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "floor_summary": 13,
+        "dwelling_units": 5,
+        "parking": 4
+      },
+      "sample_values": {
+        "floor_summary": "קרקע",
+        "dwelling_units": 2,
+        "parking": 24
+      },
+      "errors": []
+    },
+    {
+      "file_name": "הנחיות מרחביות לפיתוח המגרש והסדרי חניה (1).pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "spatial_guidelines",
+      "total_facts": 25,
+      "categories_found": [
+        "parking",
+        "regulatory_threshold"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "setback",
+        "text_clause"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 23,
+        "parking": 2
+      },
+      "sample_values": {
+        "regulatory_threshold": 0.5,
+        "parking": 13.0
+      },
+      "errors": []
+    },
+    {
+      "file_name": "הנחיות מרחביות לתכנון ועיצוב הבניין (מהדורה 7).pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "spatial_guidelines",
+      "total_facts": 39,
+      "categories_found": [
+        "regulatory_threshold",
+        "text_clause"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 32,
+        "text_clause": 7
+      },
+      "sample_values": {
+        "regulatory_threshold": 3.0,
+        "text_clause": "145"
+      },
+      "errors": []
+    },
+    {
+      "file_name": "חישוב שטחים -150.dwfx",
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "area_calculation",
+      "total_facts": 2,
+      "categories_found": [
+        "sheet_dimensions",
+        "sheet_info"
+      ],
+      "categories_missing": [
+        "area",
+        "dwelling_units",
+        "floor_summary",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "sheet_info": 1,
+        "sheet_dimensions": 1
+      },
+      "sample_values": {
+        "sheet_info": 1,
+        "sheet_dimensions": {
+          "width_mm": 2000.0,
+          "height_mm": 905.0
+        }
+      },
+      "errors": []
+    },
+    {
+      "file_name": "מדיניות להיתרי בניה בנושא אצירת אשפה.pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "waste_policy",
+      "total_facts": 41,
+      "categories_found": [
+        "regulatory_threshold"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "parking",
+        "setback",
+        "text_clause"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 41
+      },
+      "sample_values": {
+        "regulatory_threshold": 2.0
+      },
+      "errors": []
+    },
+    {
+      "file_name": "מדיניות להיתרי בניה_ בנושא איכות הסביבה.pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "environment_policy",
+      "total_facts": 14,
+      "categories_found": [
+        "regulatory_threshold",
+        "text_clause"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 13,
+        "text_clause": 1
+      },
+      "sample_values": {
+        "regulatory_threshold": 36.0,
+        "text_clause": "20"
+      },
+      "errors": []
+    },
+    {
+      "file_name": "מפת מדידה.dwfx",
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "site_survey",
+      "total_facts": 2,
+      "categories_found": [
+        "sheet_dimensions",
+        "sheet_info"
+      ],
+      "categories_missing": [
+        "area",
+        "dwelling_units",
+        "floor_summary",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "sheet_info": 1,
+        "sheet_dimensions": 1
+      },
+      "sample_values": {
+        "sheet_info": 1,
+        "sheet_dimensions": {
+          "width_mm": 841.0,
+          "height_mm": 594.0
+        }
+      },
+      "errors": []
+    },
+    {
+      "file_name": "נספח תנועה.dwfx",
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "traffic_appendix",
+      "total_facts": 2,
+      "categories_found": [
+        "sheet_dimensions",
+        "sheet_info"
+      ],
+      "categories_missing": [
+        "area",
+        "dwelling_units",
+        "floor_summary",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "sheet_info": 1,
+        "sheet_dimensions": 1
+      },
+      "sample_values": {
+        "sheet_info": 1,
+        "sheet_dimensions": {
+          "width_mm": 1500.0,
+          "height_mm": 900.0
+        }
+      },
+      "errors": []
+    },
+    {
+      "file_name": "תוכנית הגשה 100.dwfx",
+      "source_format": "dwfx",
+      "document_role": "submission",
+      "document_type": "building_plan",
+      "total_facts": 4,
+      "categories_found": [
+        "sheet_dimensions",
+        "sheet_info"
+      ],
+      "categories_missing": [
+        "area",
+        "dwelling_units",
+        "floor_summary",
+        "height",
+        "parking",
+        "setback"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "sheet_info": 1,
+        "sheet_dimensions": 3
+      },
+      "sample_values": {
+        "sheet_info": 3,
+        "sheet_dimensions": {
+          "width_mm": 4393.3,
+          "height_mm": 900.0
+        }
+      },
+      "errors": []
+    },
+    {
+      "file_name": "תמצית מדיניות בניה ירוקה להיתרי בניה.pdf",
+      "source_format": "pdf",
+      "document_role": "regulation",
+      "document_type": "green_building_policy",
+      "total_facts": 9,
+      "categories_found": [
+        "parking",
+        "regulatory_threshold"
+      ],
+      "categories_missing": [
+        "area",
+        "height",
+        "setback",
+        "text_clause"
+      ],
+      "low_confidence_facts": 0,
+      "unknown_category_facts": 0,
+      "facts_by_category": {
+        "regulatory_threshold": 7,
+        "parking": 2
+      },
+      "sample_values": {
+        "regulatory_threshold": 13.0,
+        "parking": 10.5
+      },
+      "errors": []
+    }
+  ],
+  "category_coverage": [
+    {
+      "category": "area",
+      "files_with_data": 0,
+      "total_facts": 0,
+      "avg_confidence": 0.0,
+      "min_confidence": 0.0,
+      "sources": []
+    },
+    {
+      "category": "coverage",
+      "files_with_data": 0,
+      "total_facts": 0,
+      "avg_confidence": 0.0,
+      "min_confidence": 0.0,
+      "sources": []
+    },
+    {
+      "category": "dwelling_units",
+      "files_with_data": 1,
+      "total_facts": 5,
+      "avg_confidence": 0.85,
+      "min_confidence": 0.85,
+      "sources": []
+    },
+    {
+      "category": "floor_summary",
+      "files_with_data": 1,
+      "total_facts": 13,
+      "avg_confidence": 0.6500000000000001,
+      "min_confidence": 0.65,
+      "sources": []
+    },
+    {
+      "category": "height",
+      "files_with_data": 0,
+      "total_facts": 0,
+      "avg_confidence": 0.0,
+      "min_confidence": 0.0,
+      "sources": []
+    },
+    {
+      "category": "level",
+      "files_with_data": 0,
+      "total_facts": 0,
+      "avg_confidence": 0.0,
+      "min_confidence": 0.0,
+      "sources": []
+    },
+    {
+      "category": "parking",
+      "files_with_data": 3,
+      "total_facts": 8,
+      "avg_confidence": 0.775,
+      "min_confidence": 0.75,
+      "sources": []
+    },
+    {
+      "category": "regulatory_threshold",
+      "files_with_data": 7,
+      "total_facts": 204,
+      "avg_confidence": 0.8000000000000008,
+      "min_confidence": 0.8,
+      "sources": []
+    },
+    {
+      "category": "setback",
+      "files_with_data": 0,
+      "total_facts": 0,
+      "avg_confidence": 0.0,
+      "min_confidence": 0.0,
+      "sources": []
+    },
+    {
+      "category": "sheet_dimensions",
+      "files_with_data": 4,
+      "total_facts": 6,
+      "avg_confidence": 1.0,
+      "min_confidence": 1.0,
+      "sources": []
+    },
+    {
+      "category": "sheet_info",
+      "files_with_data": 4,
+      "total_facts": 4,
+      "avg_confidence": 1.0,
+      "min_confidence": 1.0,
+      "sources": []
+    },
+    {
+      "category": "text_clause",
+      "files_with_data": 2,
+      "total_facts": 8,
+      "avg_confidence": 0.9000000000000001,
+      "min_confidence": 0.9,
+      "sources": []
+    }
+  ],
+  "missing_categories": [
+    "area",
+    "coverage",
+    "height",
+    "level",
+    "setback"
+  ],
+  "gap_backlog": [
+    {
+      "category": "area",
+      "gap_type": "completely_missing",
+      "impact_score": 10,
+      "description": "No area facts extracted from any document",
+      "recommendation": "Improve adapter patterns for area or add manual labeling"
+    },
+    {
+      "category": "height",
+      "gap_type": "completely_missing",
+      "impact_score": 9,
+      "description": "No height facts extracted from any document",
+      "recommendation": "Improve adapter patterns for height or add manual labeling"
+    },
+    {
+      "category": "setback",
+      "gap_type": "completely_missing",
+      "impact_score": 8,
+      "description": "No setback facts extracted from any document",
+      "recommendation": "Improve adapter patterns for setback or add manual labeling"
+    },
+    {
+      "category": "coverage",
+      "gap_type": "completely_missing",
+      "impact_score": 5,
+      "description": "No coverage facts extracted from any document",
+      "recommendation": "Improve adapter patterns for coverage or add manual labeling"
+    },
+    {
+      "category": "level",
+      "gap_type": "completely_missing",
+      "impact_score": 3,
+      "description": "No level facts extracted from any document",
+      "recommendation": "Improve adapter patterns for level or add manual labeling"
+    }
+  ]
+}
