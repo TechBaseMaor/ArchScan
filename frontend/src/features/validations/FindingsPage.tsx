@@ -65,7 +65,7 @@ export default function FindingsPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <Link to={validation ? `/projects/${validation.project_id}` : '/'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
+        <Link to={validation ? `/advanced/projects/${validation.project_id}` : '/advanced'} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
           <ArrowLeft size={14} /> {t('findings.backToProject')}
         </Link>
       </div>

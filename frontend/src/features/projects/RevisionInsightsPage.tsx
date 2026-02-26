@@ -51,7 +51,7 @@ export default function RevisionInsightsPage() {
     <>
       <div style={{ marginBottom: 24 }}>
         <Link
-          to={`/projects/${projectId}`}
+          to={`/advanced/projects/${projectId}`}
           style={{
             display: 'inline-flex',
             alignItems: 'center',

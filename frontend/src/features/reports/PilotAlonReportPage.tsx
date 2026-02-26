@@ -22,6 +22,7 @@ import { useI18n } from '../../shared/i18n';
 import Spinner from '../../shared/components/Spinner';
 import EmptyState from '../../shared/components/EmptyState';
 import StatusBadge from '../../shared/components/StatusBadge';
+import AiProposalsPanel from '../ai/AiProposalsPanel';
 import type {
   ComplianceReport,
   ComplianceGroup,
@@ -137,7 +138,7 @@ function ValidationPicker({
                     <td>
                       <button
                         className="btn-primary btn-sm"
-                        onClick={() => navigate(`/reports/pilot-alon/${v.validation_id}`)}
+                        onClick={() => navigate(`/advanced/reports/pilot-alon/${v.validation_id}`)}
                       >
                         {t('pilotAlon.viewReport')}
                       </button>
@@ -191,7 +192,7 @@ function ComplianceReportView({
     <>
       <div style={{ marginBottom: 24 }}>
         <Link
-          to="/reports/pilot-alon"
+          to="/advanced/reports/pilot-alon"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -274,6 +275,12 @@ function ComplianceReportView({
           />
         )}
       </div>
+
+      {/* AI Enrichment Panel */}
+      <AiProposalsPanel
+        projectId={report.project_id}
+        revisionId={report.revision_id}
+      />
     </>
   );
 }

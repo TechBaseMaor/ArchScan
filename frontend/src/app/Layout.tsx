@@ -1,14 +1,33 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { FolderKanban, ShieldCheck, BookOpen, BarChart3, Sun, Moon, Languages, Menu, X, ClipboardList, ShieldAlert } from 'lucide-react';
+import {
+  FolderKanban,
+  ShieldCheck,
+  BookOpen,
+  BarChart3,
+  Sun,
+  Moon,
+  Languages,
+  Menu,
+  X,
+  ClipboardList,
+  ShieldAlert,
+  Sparkles,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
 import { useI18n } from '../shared/i18n';
 
-const navItems = [
-  { to: '/', labelKey: 'nav.projects', icon: FolderKanban },
+const mainNav = [
+  { to: '/', labelKey: 'nav.simpleWorkflow', icon: Sparkles },
   { to: '/rulesets', labelKey: 'nav.rulesets', icon: BookOpen },
-  { to: '/benchmarks', labelKey: 'nav.benchmarks', icon: BarChart3 },
-  { to: '/reports/pilot-alon', labelKey: 'nav.pilotAlon', icon: ClipboardList },
-  { to: '/reviews', labelKey: 'nav.reviews', icon: ShieldAlert },
+] as const;
+
+const advancedNav = [
+  { to: '/advanced', labelKey: 'nav.projects', icon: FolderKanban },
+  { to: '/advanced/benchmarks', labelKey: 'nav.benchmarks', icon: BarChart3 },
+  { to: '/advanced/reports/pilot-alon', labelKey: 'nav.pilotAlon', icon: ClipboardList },
+  { to: '/advanced/reviews', labelKey: 'nav.reviews', icon: ShieldAlert },
 ] as const;
 
 function useTheme() {
@@ -38,6 +57,7 @@ export default function Layout() {
   const { theme, toggle: toggleTheme } = useTheme();
   const { t, dir, toggleLocale } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const sidebarContent = (
     <>
@@ -46,7 +66,7 @@ export default function Layout() {
         <span style={{ fontSize: 18, fontWeight: 700 }}>ArchScan</span>
       </div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-        {navItems.map(({ to, labelKey, icon: Icon }) => (
+        {mainNav.map(({ to, labelKey, icon: Icon }) => (
           <NavLink key={to} to={to} end={to === '/'}
             onClick={() => setMobileOpen(false)}
             style={({ isActive }) => ({
@@ -58,6 +78,38 @@ export default function Layout() {
               transition: 'all 0.15s',
             })}>
             <Icon size={18} />
+            {t(labelKey)}
+          </NavLink>
+        ))}
+
+        {/* Advanced Mode section */}
+        <button
+          onClick={() => setAdvancedOpen(!advancedOpen)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 20px', fontSize: 13, fontWeight: 500,
+            color: 'var(--color-text-dim)', background: 'transparent',
+            border: 'none', cursor: 'pointer', width: '100%',
+            borderInlineStart: '3px solid transparent',
+            marginTop: 8,
+          }}
+        >
+          {advancedOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          {t('nav.advancedMode')}
+        </button>
+
+        {advancedOpen && advancedNav.map(({ to, labelKey, icon: Icon }) => (
+          <NavLink key={to} to={to} end={to === '/advanced'}
+            onClick={() => setMobileOpen(false)}
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 20px 8px 36px', fontSize: 13, fontWeight: 500,
+              color: isActive ? 'var(--color-primary)' : 'var(--color-text-dim)',
+              background: isActive ? 'rgba(108,138,255,.08)' : 'transparent',
+              borderInlineStart: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
+              transition: 'all 0.15s',
+            })}>
+            <Icon size={16} />
             {t(labelKey)}
           </NavLink>
         ))}
@@ -83,17 +135,14 @@ export default function Layout() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }} dir={dir}>
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div className="sidebar-overlay" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar - desktop */}
       <aside className="sidebar sidebar-desktop">
         {sidebarContent}
       </aside>
 
-      {/* Sidebar - mobile drawer */}
       <aside className={`sidebar sidebar-mobile ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 16px 0' }}>
           <button className="sidebar-btn" style={{ width: 'auto', padding: 6 }} onClick={() => setMobileOpen(false)}>
@@ -104,7 +153,6 @@ export default function Layout() {
       </aside>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Mobile header bar */}
         <div className="mobile-header">
           <button className="sidebar-btn" style={{ width: 'auto', padding: 8 }} onClick={() => setMobileOpen(true)}>
             <Menu size={20} />

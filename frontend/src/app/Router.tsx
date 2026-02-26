@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './Layout';
+import SimpleWorkflowPage from '../features/workflow/SimpleWorkflowPage';
 import ProjectsPage from '../features/projects/ProjectsPage';
 import ProjectDetailPage from '../features/projects/ProjectDetailPage';
 import RevisionInsightsPage from '../features/projects/RevisionInsightsPage';
@@ -16,18 +17,22 @@ const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
-      { path: '/', element: <ProjectsPage /> },
-      { path: '/projects/:projectId', element: <ProjectDetailPage /> },
-      { path: '/projects/:projectId/revisions/:revisionId/insights', element: <RevisionInsightsPage /> },
-      { path: '/projects/:projectId/validate', element: <ValidationWizard /> },
-      { path: '/validations/:validationId/findings', element: <FindingsPage /> },
+      // Simple workflow — default
+      { path: '/', element: <SimpleWorkflowPage /> },
+
+      // Advanced mode routes
+      { path: '/advanced', element: <ProjectsPage /> },
+      { path: '/advanced/projects/:projectId', element: <ProjectDetailPage /> },
+      { path: '/advanced/projects/:projectId/revisions/:revisionId/insights', element: <RevisionInsightsPage /> },
+      { path: '/advanced/projects/:projectId/validate', element: <ValidationWizard /> },
+      { path: '/advanced/validations/:validationId/findings', element: <FindingsPage /> },
       { path: '/rulesets', element: <RulesetsPage /> },
       { path: '/rulesets/:rulesetId', element: <RulesetDetailPage /> },
-      { path: '/benchmarks', element: <BenchmarksPage /> },
-      { path: '/benchmarks/:benchmarkId', element: <BenchmarkDetailPage /> },
-      { path: '/reports/pilot-alon', element: <PilotAlonReportPage /> },
-      { path: '/reports/pilot-alon/:validationId', element: <PilotAlonReportPage /> },
-      { path: '/reviews', element: <ReviewQueuePage /> },
+      { path: '/advanced/benchmarks', element: <BenchmarksPage /> },
+      { path: '/advanced/benchmarks/:benchmarkId', element: <BenchmarkDetailPage /> },
+      { path: '/advanced/reports/pilot-alon', element: <PilotAlonReportPage /> },
+      { path: '/advanced/reports/pilot-alon/:validationId', element: <PilotAlonReportPage /> },
+      { path: '/advanced/reviews', element: <ReviewQueuePage /> },
     ],
   },
 ]);

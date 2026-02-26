@@ -47,7 +47,7 @@ export default function ProjectsPage() {
       setShowCreate(false);
       setName('');
       setDescription('');
-      navigate(`/projects/${proj.project_id}`);
+      navigate(`/advanced/projects/${proj.project_id}`);
     },
     onError: () => showError(t('projects.error')),
   });
@@ -57,7 +57,7 @@ export default function ProjectsPage() {
     onSuccess: (proj) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       showSuccess(t('demo.success', { name: proj.name }));
-      navigate(`/projects/${proj.project_id}`);
+      navigate(`/advanced/projects/${proj.project_id}`);
     },
     onError: () => showError(t('demo.error')),
   });
@@ -139,7 +139,7 @@ export default function ProjectsPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {projects.map((p) => (
             <div key={p.project_id} className="card" style={{ cursor: 'pointer', transition: 'border-color 0.15s' }}
-              onClick={() => navigate(`/projects/${p.project_id}`)}
+              onClick={() => navigate(`/advanced/projects/${p.project_id}`)}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>

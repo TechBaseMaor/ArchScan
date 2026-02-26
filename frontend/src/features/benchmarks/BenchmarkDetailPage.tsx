@@ -35,7 +35,7 @@ export default function BenchmarkDetailPage() {
   return (
     <>
       <div style={{ marginBottom: 24 }}>
-        <Link to="/benchmarks" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
+        <Link to="/advanced/benchmarks" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-dim)' }}>
           <ArrowLeft size={14} /> {t('benchmarks.backToBenchmarks')}
         </Link>
       </div>
